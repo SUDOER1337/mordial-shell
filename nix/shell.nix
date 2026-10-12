@@ -7,6 +7,7 @@
   shellcheck,
   jsonfmt,
   lefthook,
+  python3,
   kdePackages,
   mkShellNoCC,
 }:
@@ -26,6 +27,9 @@ mkShellNoCC {
 
     # json
     jsonfmt # formatter
+
+    # python
+    python3 # settings search index generator
 
     # CoC
     lefthook # githooks
