@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, ... }:
 
 {
   options.services.mordial-shell = {
