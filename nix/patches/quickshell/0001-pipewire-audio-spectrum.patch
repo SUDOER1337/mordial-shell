@@ -1,0 +1,12 @@
+diff --git a/src/services/pipewire/CMakeLists.txt b/src/services/pipewire/CMakeLists.txt
+index fe894c9..3bc9021 100644
+--- a/src/services/pipewire/CMakeLists.txt
++++ b/src/services/pipewire/CMakeLists.txt
+@@ -4,6 +4,7 @@ pkg_check_modules(pipewire REQUIRED IMPORTED_TARGET libpipewire-0.3)
+ qt_add_library(quickshell-service-pipewire STATIC
+ 	qml.cpp
+ 	peak.cpp
++	spectrum.cpp
+ 	core.cpp
+ 	connection.cpp
+ 	registry.cpp

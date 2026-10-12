@@ -7,7 +7,7 @@
 ## Project Type & Entry
 
 - **Language**: QML + Qt6
-- **Framework**: Quickshell (via `noctalia-qs` fork)
+- **Framework**: Quickshell (upstream, patched in `nix/quickshell-patched.nix`)
 - **Main entry**: `shell.qml` (ShellRoot component)
 - **Package manager**: Nix flakes
 - **Config path**: `~/.config/mordial/` (not `~/.config/noctalia/`)
@@ -250,7 +250,7 @@ git add -A && lefthook run pre-commit
 
 ## Known Constraints
 
-1. **Quickshell Dependency**: Mordial depends on the `noctalia-qs` fork. If unmaintained, shell cannot be updated beyond current Quickshell capabilities.
+1. **Quickshell Patching**: Mordial runs on upstream Quickshell with three features re-applied as patches in `nix/patches/quickshell/` (audio spectrum, Region `CornerState`, `flushWaylandState`). Upstream bumps may require rebasing these patches.
 2. **QML Only**: No C++ rewrites; architecture is QML-based by design.
 3. **Wayland Only**: X11 is not supported.
 4. **Not a Full DE**: Handles shell UI only—file manager, settings daemon, window manager, greeter are external.

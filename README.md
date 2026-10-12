@@ -18,7 +18,7 @@ A minimal desktop shell for Wayland built on [Quickshell](https://quickshell.org
 ## Requirements
 
 - [MangoWC](https://github.com/mango-wm/mango-wm) (mmsg must be on PATH)
-- [Quickshell](https://quickshell.org/) (noctalia-qs fork)
+- [Quickshell](https://quickshell.org/) (upstream; patched at build time, see `nix/quickshell-patched.nix`)
 - See `flake.nix` for additional dependencies
 
 ## Installation

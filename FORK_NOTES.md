@@ -104,18 +104,22 @@ This fork does **not** submit pull requests upstream or claim to be the official
 
 ### Quickshell Dependency
 
-Mordial depends on Quickshell (Qt/QML framework) via the `noctalia-qs` fork:
+Mordial runs on **upstream Quickshell** (from nixpkgs), not the archived
+`noctalia-qs` fork. The fork was only ever needed for three features, which are
+re-applied to upstream at build time in `nix/quickshell-patched.nix`:
 
-```
-https://github.com/noctalia-dev/noctalia-qs
-```
+1. `PwAudioSpectrum` — `src/services/pipewire/spectrum.{hpp,cpp}`
+2. `Region` `CornerState` — `src/core/region.{hpp,cpp}`
+3. `QsWindow.flushWaylandState()` — `src/window/proxywindow.{hpp,cpp}`
 
-This is the Quickshell fork maintained for Noctalia v4 compatibility. As long as this Quickshell fork is maintained, Mordial can continue running.
+The patches live in `nix/patches/quickshell/`. The vendored `spectrum.*` sources
+are LGPL-3 (same license as Quickshell). Bumping the pinned nixpkgs may require
+rebasing these patches if upstream changes the touched files.
 
-**If `noctalia-qs` is unmaintained:**
+**If the patches ever drift:**
 
-- The project may need to fork Quickshell as well, or
-- Find an alternative QML/Qt Wayland shell framework
+- Rebase them against the new upstream source, or
+- Fall back to tracking a specific Quickshell revision as a dedicated flake input
 
 ---
 

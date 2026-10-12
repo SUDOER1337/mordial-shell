@@ -1,0 +1,93 @@
+diff --git a/src/window/CMakeLists.txt b/src/window/CMakeLists.txt
+index 47b546d..1cd6317 100644
+--- a/src/window/CMakeLists.txt
++++ b/src/window/CMakeLists.txt
+@@ -20,6 +20,7 @@ add_library(quickshell-window-init OBJECT init.cpp)
+ 
+ target_link_libraries(quickshell-window PRIVATE
+ 	Qt::Core Qt::Gui Qt::Quick Qt6::QuickPrivate
++	Qt::WaylandClient Qt::WaylandClientPrivate wayland-client
+ )
+ 
+ qs_add_link_dependencies(quickshell-window quickshell-debug)
+diff --git a/src/window/proxywindow.cpp b/src/window/proxywindow.cpp
+index 116d3df..c36e2de 100644
+--- a/src/window/proxywindow.cpp
++++ b/src/window/proxywindow.cpp
+@@ -25,6 +25,11 @@
+ #include <qvariant.h>
+ #include <qwindow.h>
+ 
++#ifdef Q_OS_LINUX
++#include <private/qwaylandwindow_p.h>
++#include <wayland-client-protocol.h>
++#endif
++
+ #include "../core/generation.hpp"
+ #include "../core/qmlglobal.hpp"
+ #include "../core/qmlscreen.hpp"
+@@ -500,6 +505,26 @@ void ProxyWindowBase::setUpdatesEnabled(bool updatesEnabled) {
+ 	emit this->updatesEnabledChanged();
+ }
+ 
++void ProxyWindowBase::requestUpdate() {
++	if (this->window == nullptr) return;
++
++	// Process pending polishes so double-buffered Wayland state
++	// (blur regions, input regions) is set on the protocol objects.
++	QQuickWindowPrivate::get(this->window)->polishItems();
++
++#ifdef Q_OS_LINUX
++	// Directly commit the Wayland surface to flush double-buffered state.
++	// QQuickWindow::update() alone is insufficient: after an app launch the
++	// compositor may stop sending frame callbacks, blocking Qt's render loop.
++	auto* waylandWindow =
++	    dynamic_cast<QtWaylandClient::QWaylandWindow*>(this->window->handle());
++
++	if (waylandWindow != nullptr && waylandWindow->surface() != nullptr) {
++		wl_surface_commit(waylandWindow->surface());
++	}
++#endif
++}
++
+ qreal ProxyWindowBase::devicePixelRatio() const {
+ 	if (this->window != nullptr) return this->window->devicePixelRatio();
+ 	if (this->mScreen != nullptr) return this->mScreen->devicePixelRatio();
+@@ -652,6 +677,10 @@ void ProxiedWindow::exposeEvent(QExposeEvent* event) {
+ 	emit this->exposed();
+ }
+ 
++void ProxiedWindow::flushWaylandState() {
++	if (this->mProxy) this->mProxy->requestUpdate();
++}
++
+ void ProxyWindowContentItem::updatePolish() { emit this->polished(); }
+ 
+ void ProxyWindowBase::onPolished() {
+diff --git a/src/window/proxywindow.hpp b/src/window/proxywindow.hpp
+index 8adcefa..baccfe9 100644
+--- a/src/window/proxywindow.hpp
++++ b/src/window/proxywindow.hpp
+@@ -150,6 +150,11 @@ public:
+ 
+ 	[[nodiscard]] QObject* windowTransform() const { return nullptr; } // NOLINT
+ 
++	/// Request a render update for this window. Useful to flush double-buffered
++	/// Wayland state (e.g. blur regions) when no animation is running to drive
++	/// the render loop.
++	Q_INVOKABLE void requestUpdate();
++
+ 	[[nodiscard]] QQmlListProperty<QObject> data();
+ 
+ signals:
+@@ -261,6 +266,10 @@ public:
+ 	[[nodiscard]] ProxyWindowBase* proxy() const { return this->mProxy; }
+ 	void setProxy(ProxyWindowBase* proxy) { this->mProxy = proxy; }
+ 
++	/// Flush pending double-buffered Wayland state by processing polishes
++	/// and committing the surface. Callable from QML via Window.window.
++	Q_INVOKABLE void flushWaylandState();
++
+ 	static void callOnScenegraphInit(std::function<void(QQuickWindow*)> cb);
+ 
+ signals:
