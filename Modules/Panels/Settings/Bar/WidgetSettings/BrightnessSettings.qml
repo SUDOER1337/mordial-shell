@@ -53,9 +53,9 @@ ColumnLayout {
     ]
     currentKey: valueDisplayMode
     onSelected: key => {
-      valueDisplayMode = key;
-      saveSettings();
-    }
+                  valueDisplayMode = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.displayMode
   }
 
@@ -63,18 +63,18 @@ ColumnLayout {
     label: "Select icon color"
     currentKey: valueIconColor
     onSelected: key => {
-      valueIconColor = key;
-      saveSettings();
-    }
+                  valueIconColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.iconColor
   }
 
   NColorChoice {
     currentKey: valueTextColor
     onSelected: key => {
-      valueTextColor = key;
-      saveSettings();
-    }
+                  valueTextColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.textColor
   }
 
@@ -85,9 +85,9 @@ ColumnLayout {
     description: "Change brightness for every monitor when using the scroll wheel."
     checked: valueApplyToAllMonitors
     onToggled: checked => {
-      valueApplyToAllMonitors = checked;
-      saveSettings();
-    }
+                 valueApplyToAllMonitors = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.applyToAllMonitors
   }
 }

@@ -2,7 +2,7 @@
 // =============================================================================
 // Color scheme management — loading, resolving, and applying predefined schemes.
 // Coordinates between:
-//   - File system (scheme JSON files in Assets/ColorScheme and ~/.config/agnocturnal/colorschemes/)
+//   - File system (scheme JSON files in Assets/ColorScheme and ~/.config/mordial/colorschemes/)
 //   - Color.qml (30 color tokens consumed by the UI)
 //   - WallpaperService (wallpaper-derived colors)
 //   - AppThemeService (template generation for GTK, terminals, etc.)
@@ -132,10 +132,10 @@ Singleton {
     var filename = chunks[chunks.length - 1];
     var schemeName = filename.replace(".json", "");
     // Map file-safe names back to display-friendly names
-    if (schemeName === "Agnoctural-default") {
-      return "Agnoctural (default)";
-    } else if (schemeName === "Agnoctural-legacy") {
-      return "Agnoctural (legacy)";
+    if (schemeName === "Mordial-default") {
+      return "Mordial (default)";
+    } else if (schemeName === "Mordial-legacy") {
+      return "Mordial (legacy)";
     } else if (schemeName === "Tokyo-Night") {
       return "Tokyo Night";
     } else if (schemeName === "Rosepine") {
@@ -158,10 +158,10 @@ Singleton {
     }
     var schemeName = nameOrPath.replace(".json", "");
     // Convert display names to file-safe directory names
-    if (schemeName === "Agnoctural (default)") {
-      schemeName = "Agnoctural-default";
-    } else if (schemeName === "Agnoctural (legacy)") {
-      schemeName = "Agnoctural-legacy";
+    if (schemeName === "Mordial (default)") {
+      schemeName = "Mordial-default";
+    } else if (schemeName === "Mordial (legacy)") {
+      schemeName = "Mordial-legacy";
     } else if (schemeName === "Tokyo Night") {
       schemeName = "Tokyo-Night";
     } else if (schemeName === "Rose Pine") {

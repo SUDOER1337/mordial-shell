@@ -333,9 +333,9 @@ Item {
           description: "Hide your device from nearby Bluetooth devices."
           checked: Settings.data.network.disableDiscoverability
           onToggled: checked => {
-            Settings.data.network.disableDiscoverability = checked;
-            BluetoothService.setDiscoverable(!checked);
-          }
+                       Settings.data.network.disableDiscoverability = checked;
+                       BluetoothService.setDiscoverable(!checked);
+                     }
         }
 
         // RSSI Polling

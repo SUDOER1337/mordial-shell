@@ -124,15 +124,15 @@ Item {
     ]
 
     onTriggered: action => {
-      contextMenu.close();
-      PanelService.closeContextMenu(screen);
+                   contextMenu.close();
+                   PanelService.closeContextMenu(screen);
 
-      if (action === "open-display-settings") {
-        SettingsPanelService.openToTab(DashboardPanel.Tab.Display, -1, screen);
-      } else if (action === "widget-settings") {
-        BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-      }
-    }
+                   if (action === "open-display-settings") {
+                     SettingsPanelService.openToTab(DashboardPanel.Tab.Display, -1, screen);
+                   } else if (action === "widget-settings") {
+                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
+                   }
+                 }
   }
 
   BarPill {

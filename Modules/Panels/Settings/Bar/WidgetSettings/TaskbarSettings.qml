@@ -72,9 +72,9 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-      root.valueHideMode = key;
-      saveSettings();
-    }
+                  root.valueHideMode = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.hideMode
   }
 
@@ -84,9 +84,9 @@ ColumnLayout {
     description: "Show only apps from the monitor where the bar is located."
     checked: root.valueOnlySameOutput
     onToggled: checked => {
-      root.valueOnlySameOutput = checked;
-      saveSettings();
-    }
+                 root.valueOnlySameOutput = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.onlySameOutput
   }
 
@@ -96,9 +96,9 @@ ColumnLayout {
     description: "Show only apps from active workspaces."
     checked: root.valueOnlyActiveWorkspaces
     onToggled: checked => {
-      root.valueOnlyActiveWorkspaces = checked;
-      saveSettings();
-    }
+                 root.valueOnlyActiveWorkspaces = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.onlyActiveWorkspaces
   }
 
@@ -108,9 +108,9 @@ ColumnLayout {
     description: "Apply theme colors to taskbar icons."
     checked: root.valueColorizeIcons
     onToggled: checked => {
-      root.valueColorizeIcons = checked;
-      saveSettings();
-    }
+                 root.valueColorizeIcons = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.colorizeIcons
   }
 
@@ -120,9 +120,9 @@ ColumnLayout {
     description: "Show pinned apps from the dock in the taskbar."
     checked: root.valueShowPinnedApps
     onToggled: checked => {
-      root.valueShowPinnedApps = checked;
-      saveSettings();
-    }
+                 root.valueShowPinnedApps = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showPinnedApps
   }
 
@@ -137,9 +137,9 @@ ColumnLayout {
     value: root.valueIconScale
     defaultValue: widgetMetadata.iconScale
     onMoved: value => {
-      root.valueIconScale = value;
-      saveSettings();
-    }
+               root.valueIconScale = value;
+               saveSettings();
+             }
     text: Math.round(root.valueIconScale * 100) + "%"
   }
 
@@ -149,9 +149,9 @@ ColumnLayout {
     description: isVerticalBar ? "Vertical taskbar does not support showing titles." : "Display window titles in the taskbar."
     checked: root.valueShowTitle
     onToggled: checked => {
-      root.valueShowTitle = checked;
-      saveSettings();
-    }
+                 root.valueShowTitle = checked;
+                 saveSettings();
+               }
     enabled: !isVerticalBar
     defaultValue: widgetMetadata.showTitle
   }
@@ -175,9 +175,9 @@ ColumnLayout {
     description: "Automatically adjust entry width based on the number of entries."
     checked: root.valueSmartWidth
     onToggled: checked => {
-      root.valueSmartWidth = checked;
-      saveSettings();
-    }
+                 root.valueSmartWidth = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.smartWidth
   }
 
@@ -193,9 +193,9 @@ ColumnLayout {
     value: root.valueMaxTaskbarWidth
     defaultValue: widgetMetadata.maxTaskbarWidth
     onMoved: value => {
-      root.valueMaxTaskbarWidth = Math.round(value);
-      saveSettings();
-    }
+               root.valueMaxTaskbarWidth = Math.round(value);
+               saveSettings();
+             }
     text: Math.round(root.valueMaxTaskbarWidth) + "%"
   }
 }

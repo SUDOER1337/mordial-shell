@@ -12,6 +12,6 @@
     "memory",
     "disk",
     "wm",
-    "packages"
-  ]
+    "packages",
+  ],
 }

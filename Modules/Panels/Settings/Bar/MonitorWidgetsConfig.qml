@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import "../../../../Helpers/QtObj2JS.js" as QtObj2JS
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.UI
 import qs.Widgets
 
@@ -116,21 +115,7 @@ NBox {
       return;
     for (var i = 0; i < widgetIds.length; i++) {
       var id = widgetIds[i];
-      var displayName = id;
       const badges = [];
-      if (BarWidgetRegistry.isPluginWidget(id)) {
-        var pluginId = id.replace("plugin:", "");
-        var manifest = PluginRegistry.getPluginManifest(pluginId);
-        if (manifest && manifest.name) {
-          displayName = manifest.name;
-        } else {
-          displayName = pluginId;
-        }
-        badges.push({
-                      "icon": "plugin",
-                      "color": Color.mSecondary
-                    });
-      }
       if (BarWidgetRegistry.isCpuIntensive(id)) {
         badges.push({
                       "icon": "cpu-intensive",
@@ -139,7 +124,7 @@ NBox {
       }
       availableWidgetsModel.append({
                                      "key": id,
-                                     "name": displayName,
+                                     "name": id,
                                      "badges": badges
                                    });
     }
@@ -181,7 +166,6 @@ NBox {
       onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
       onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
       onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
     }
 
     // Center Section
@@ -199,7 +183,6 @@ NBox {
       onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
       onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
       onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
     }
 
     // Right Section
@@ -217,14 +200,6 @@ NBox {
       onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
       onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
       onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
     }
-  }
-
-  // Plugin settings dialog
-  NPluginSettingsPopup {
-    id: pluginSettingsDialog
-    parent: Overlay.overlay
-    showToastOnSave: false
   }
 }

@@ -64,9 +64,9 @@ ColumnLayout {
       return items;
     }
     onSelected: key => {
-      valueStatType = key;
-      saveSettings();
-    }
+                  valueStatType = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.statType
   }
 
@@ -78,71 +78,71 @@ ColumnLayout {
     model: {
       const paths = Object.keys(SystemStatService.diskPercents).sort();
       return paths.map(path => ({
-        key: path,
-        name: path
-      }));
+                                  key: path,
+                                  name: path
+                                }));
     }
-      currentKey: valueDiskPath
-      onSelected: key => {
-      valueDiskPath = key;
-      saveSettings();
-    }
-      defaultValue: widgetMetadata.diskPath
-    }
+    currentKey: valueDiskPath
+    onSelected: key => {
+                  valueDiskPath = key;
+                  saveSettings();
+                }
+    defaultValue: widgetMetadata.diskPath
+  }
 
-      NDivider {
-      Layout.fillWidth: true
-    }
+  NDivider {
+    Layout.fillWidth: true
+  }
 
-      NToggle {
-      Layout.fillWidth: true
-      label: "Show background"
-      description: "Show the background container for the system stat widget."
-      checked: valueShowBackground
-      onToggled: checked => {
-      valueShowBackground = checked;
-      saveSettings();
-    }
-      defaultValue: widgetMetadata.showBackground
-    }
+  NToggle {
+    Layout.fillWidth: true
+    label: "Show background"
+    description: "Show the background container for the system stat widget."
+    checked: valueShowBackground
+    onToggled: checked => {
+                 valueShowBackground = checked;
+                 saveSettings();
+               }
+    defaultValue: widgetMetadata.showBackground
+  }
 
-      NToggle {
-      Layout.fillWidth: true
-      visible: valueShowBackground
-      label: "Rounded corners"
-      description: "Use rounded corners for the widget background."
-      checked: valueRoundedCorners
-      onToggled: checked => {
-      valueRoundedCorners = checked;
-      saveSettings();
-    }
-      defaultValue: widgetMetadata.roundedCorners
-    }
+  NToggle {
+    Layout.fillWidth: true
+    visible: valueShowBackground
+    label: "Rounded corners"
+    description: "Use rounded corners for the widget background."
+    checked: valueRoundedCorners
+    onToggled: checked => {
+                 valueRoundedCorners = checked;
+                 saveSettings();
+               }
+    defaultValue: widgetMetadata.roundedCorners
+  }
 
-      NDivider {
-      Layout.fillWidth: true
-    }
+  NDivider {
+    Layout.fillWidth: true
+  }
 
-      NComboBox {
-      Layout.fillWidth: true
-      label: "Layout"
-      description: "Choose how the legend is displayed relative to the graph."
-      currentKey: valueLayout
-      minimumWidth: 260 * Style.uiScaleRatio
-      model: [
+  NComboBox {
+    Layout.fillWidth: true
+    label: "Layout"
+    description: "Choose how the legend is displayed relative to the graph."
+    currentKey: valueLayout
+    minimumWidth: 260 * Style.uiScaleRatio
+    model: [
       {
-      "key": "side",
-      "name": "Side"
-    },
+        "key": "side",
+        "name": "Side"
+      },
       {
-      "key": "bottom",
-      "name": "Bottom"
-    }
-      ]
-      onSelected: key => {
-      valueLayout = key;
-      saveSettings();
-    }
-      defaultValue: widgetMetadata.layout
-    }
-    }
+        "key": "bottom",
+        "name": "Bottom"
+      }
+    ]
+    onSelected: key => {
+                  valueLayout = key;
+                  saveSettings();
+                }
+    defaultValue: widgetMetadata.layout
+  }
+}

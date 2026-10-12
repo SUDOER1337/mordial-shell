@@ -117,13 +117,16 @@ NBox {
       Layout.fillWidth: true
       Layout.fillHeight: true
       horizontalPolicy: ScrollBar.AlwaysOff
-      gradientColor: Color.mSurfaceVariant
+      // The row's own fill, so the fade blends into it instead of a stale token.
+      gradientColor: Qt.alpha(Color.mSurfaceContainer, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
       reserveScrollbarSpace: false
 
       Column {
         id: notificationColumn
         width: listScroll.availableWidth
-        spacing: Style.marginM
+        // Rows inset their card by Style.cardShadowPadding; cancelling that here
+        // reproduces the popup's marginM gap between the visible cards.
+        spacing: -Style.cardShadowPadding * 2 + Style.marginM
 
         Repeater {
           model: NotificationService.historyModel

@@ -8,7 +8,6 @@ import qs.Modules.MainScreen
 import qs.Modules.Panels.Dashboard.Pages
 import qs.Services.Compositor
 import qs.Services.Media
-import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
 
@@ -16,17 +15,22 @@ SmartPanel {
   id: root
 
   // === CUSTOMIZATION GUIDE ===
-  // This file controls the overall Dashboard layout and sizing.
+  // This file controls the overall Dashboard layout and sizing. The panel is a
+  // sidebar rail plus a StackLayout of pages, one per Sidebar entry.
   //
   // KEY SIZING PROPERTIES (see below for exact lines):
-  // 1. Panel size           → Content-driven via contentPreferredWidth/Height
-  //                           (panelContent); preferredWidth/preferredHeight below
-  //                           are only the pre-content fallbacks
+  // 1. Panel size           → FIXED, from Settings.data.dashboard.panelWidth /
+  //                           panelHeight (Settings > Dashboard > Appearance).
+  //                           Both pages share it, so switching tabs never
+  //                           resizes the panel. SmartPanel clamps the request
+  //                           to the available screen space.
   // 2. Content margins      → contentLayout anchors.margins
-  // 3. Sidebar-to-content gap → contentLayout / dashboardRow spacing
-  // 4. Page header heights  → Lines ~248, ~297 (implicitHeight formulas)
-  // 5. Sidebar sizing       → See Sidebar.qml (line ~50-60)
-  // 6. Page content spacing → See individual Page files (MediaPlayerCard.qml, etc.)
+  // 3. Sidebar-to-content gap → contentLayout spacing
+  // 4. Sidebar sizing       → See Sidebar.qml (line ~50-60)
+  // 5. Home arrangement      → homePage GridLayout below (3 columns x 2 rows;
+  //                           media and notifications span both rows)
+  // 6. Home cell sizing      → Layout.preferredWidth / preferredHeight per card
+  // 7. Page content spacing → See individual Page files (MediaPlayerCard.qml, etc.)
   //
   // ADJUSTMENT SCALE REFERENCE:
   // - Style.marginXS = ~4px, marginS = ~8px, marginM = ~12px, marginL = ~16px
@@ -58,6 +62,39 @@ SmartPanel {
     Wallpaper
   }
 
+  // === Page Enum (the Dashboard's own sidebar pages) ===
+  // Home is always index 0: it is the fallback for a plain open (bar widget,
+  // `qs ipc call dashboard toggle`) and the page a dismissed panel resets to.
+  // Nothing remembers the last page across opens - an explicit request always
+  // wins, so callers do not have to know which page is currently shown.
+  enum Page {
+    Home,
+    AIChat,
+    Wallpaper
+  }
+
+  // Page to show. The sidebar drives this, but a caller that opens the panel
+  // from the outside (bar widget, settings button, IPC) sets pendingPage first;
+  // onOpened then applies it.
+  property int currentPage: DashboardPanel.Page.Home
+  property int pendingPage: DashboardPanel.Page.Home
+
+  // Pages live inside the panelContent Component, so their ids are not visible
+  // from this scope. The component assigns these references on completion.
+  property Item homePage: null
+  property Item aiChatPage: null
+  property Item wallpaperPage: null
+  property int pageCount: 0
+
+  // Page resolved for this open, used to size the panel and to forward keys.
+  readonly property Item activePage: {
+    if (currentPage === DashboardPanel.Page.Wallpaper)
+      return wallpaperPage;
+    if (currentPage === DashboardPanel.Page.AIChat)
+      return aiChatPage;
+    return homePage;
+  }
+
   // Positioning
   readonly property string dashboardPosition: Settings.data.dashboard.position
 
@@ -76,23 +113,74 @@ SmartPanel {
   panelAnchorTop: !shouldCenter && dashboardPosition !== "close_to_bar_button" && dashboardPosition.startsWith("top_")
 
   // === SIZING & SPACING - ADJUST HERE ===
-  // The panel normally hugs its content (contentPreferredWidth/Height on
-  // panelContent). These are only used until the content reports its size.
-  preferredWidth: Math.round(640 * Style.uiScaleRatio)
-
-  // Internal state
-  property int _currentPage: 0
-
-  // Page indices
-  readonly property int pageQuickSettings: 0
-  readonly property int pageSystem: 1
+  // The panel has a FIXED size read straight from the dashboard settings. It is
+  // deliberately NOT derived from page content: a content-derived size fed the
+  // panel width back into the cards, which fought each other over space and
+  // moved the panel geometry on every page change. preferredWidth/Height mirror
+  // panelContent's values so the size holds even before content is loaded.
+  preferredWidth: Settings.data.dashboard.panelWidth
+  preferredHeight: Settings.data.dashboard.panelHeight
 
   onOpened: {
     MediaService.autoSwitchingPaused = true;
+    // A page requested while the panel was closed lands here. Page.Home is the
+    // default, so a plain open always starts fresh on Home.
+    if (currentPage !== pendingPage) {
+      setPage(pendingPage);
+    } else if (activePage?.onPageShown) {
+      activePage.onPageShown();
+    }
   }
 
   onClosed: {
     MediaService.autoSwitchingPaused = false;
+    // No memory across opens: a request only survives until the panel closes, so
+    // a later plain open (bar widget, `qs ipc call dashboard toggle`) is back
+    // on Page.Home.
+    pendingPage = DashboardPanel.Page.Home;
+  }
+
+  // Switch the sidebar page. Pages with setup work (focus, selection reset) get
+  // their onPageShown() hook called. Callers outside the panel may omit the page
+  // or pass something non-numeric, so coerce to a real page id: currentPage is
+  // an int and QML rejects undefined with "Cannot assign [undefined] to int".
+  function setPage(page) {
+    const target = Number.isInteger(page) ? page : DashboardPanel.Page.Home;
+    if (currentPage === target) {
+      if (activePage?.onPageShown)
+        activePage.onPageShown();
+      return;
+    }
+    currentPage = target;
+    if (activePage?.onPageShown) {
+      activePage.onPageShown();
+    }
+  }
+
+  // Open the panel on a specific page, remembering it for the open in case the
+  // panel was closed. This is the entry point DashboardPanelService uses.
+  function openPage(page, buttonItem) {
+    pendingPage = Number.isInteger(page) ? page : DashboardPanel.Page.Home;
+    if (isPanelOpen) {
+      setPage(pendingPage);
+      return;
+    }
+    if (Settings.data.dashboard.position === "close_to_bar_button") {
+      open(buttonItem);
+    } else {
+      open();
+    }
+  }
+
+  // Toggle like openPage, but closes when the panel is already open on the
+  // requested page - the behaviour the settings button and bar widget expect.
+  function togglePage(page, buttonItem) {
+    const target = Number.isInteger(page) ? page : DashboardPanel.Page.Home;
+    if (isPanelOpen && currentPage === target) {
+      close();
+      return;
+    }
+    openPage(target, buttonItem);
   }
 
   // SettingsPanel-compatible API — redirects to standalone settings panel
@@ -100,28 +188,71 @@ SmartPanel {
     SettingsPanelService.openToTab(tab, subTab, root.screen);
   }
 
-  // Keyboard handlers for SmartPanel integration
+  function onEscapePressed() {
+    close();
+  }
+
+  // The wallpaper page is the only one with keyboard navigation, so its grid
+  // handlers are forwarded here (same duck-typing MainScreen uses for panels).
+  function onDownPressed() {
+    if (activePage?.onDownPressed)
+      activePage.onDownPressed();
+  }
+
+  function onUpPressed() {
+    if (activePage?.onUpPressed)
+      activePage.onUpPressed();
+  }
+
+  function onLeftPressed() {
+    if (activePage?.onLeftPressed)
+      activePage.onLeftPressed();
+  }
+
+  function onRightPressed() {
+    if (activePage?.onRightPressed)
+      activePage.onRightPressed();
+  }
+
+  function onReturnPressed() {
+    if (activePage?.onReturnPressed)
+      activePage.onReturnPressed();
+  }
+
+  function onEnterPressed() {
+    if (activePage?.onEnterPressed) {
+      activePage.onEnterPressed();
+    } else if (activePage?.onReturnPressed) {
+      activePage.onReturnPressed();
+    }
+  }
+
   function onTabPressed() {
-    _currentPage = (_currentPage + 1) % 2;
+    if (pageCount > 0)
+      setPage((currentPage + 1) % pageCount);
   }
 
   function onBackTabPressed() {
-    _currentPage = (_currentPage - 1 + 2) % 2;
-  }
-
-  function onEscapePressed() {
-    close();
+    if (pageCount > 0)
+      setPage((currentPage - 1 + pageCount) % pageCount);
   }
 
   panelContent: Item {
     id: panelContent
 
-    readonly property real contentPreferredWidth: contentLayout.implicitWidth + Style.margin2S
-    // The Dashboard is capped so a tall column (big album art, a long month
-    // grid, many shortcut rows) cannot stretch the window. Columns scroll
-    // internally once the cap bites.
-    readonly property real maxContentHeight: Math.round(360 * Style.uiScaleRatio)
-    readonly property real contentPreferredHeight: Style.margin2S + Math.min(Math.max(contentLayout.implicitHeight, quickSettingsPage.contentImplicitHeight), panelContent.maxContentHeight)
+    // Publish page references to the root scope; their ids are not visible there.
+    Component.onCompleted: {
+      root.homePage = homePage;
+      root.aiChatPage = aiChatPage;
+      root.wallpaperPage = wallpaperPage;
+      root.pageCount = sidebar.tabCount;
+    }
+
+    // Fixed panel size, in raw pixels, straight from the settings. Both pages
+    // report the same number, so switching pages never changes the panel
+    // geometry. SmartPanel clamps this to the available screen width/height.
+    readonly property real contentPreferredWidth: Settings.data.dashboard.panelWidth
+    readonly property real contentPreferredHeight: Settings.data.dashboard.panelHeight
 
     RowLayout {
       id: contentLayout
@@ -132,140 +263,94 @@ SmartPanel {
       Sidebar {
         id: sidebar
         expanded: false
-        currentIndex: root._currentPage
-
-        onTabSelected: index => {
-          root._currentPage = index;
-        }
-
-        onOpenSettingsRequested: {
-          SettingsPanelService.openToTab(0, -1, root.screen);
-        }
+        currentIndex: root.currentPage
+        onTabSelected: index => root.setPage(index)
       }
 
-      RowLayout {
-        id: dashboardRow
+      // One StackLayout per sidebar page. Because the panel size is fixed, the
+      // stack hands every page the same rectangle, so switching pages changes
+      // nothing but which page is visible.
+      StackLayout {
+        id: pageStack
         Layout.fillWidth: true
         Layout.fillHeight: true
-        spacing: Style.marginS
+        currentIndex: root.currentPage
 
-        // Media player card — narrow full-height column beside the page area.
-        // Scrolls because its artwork plus controls exceed the panel's cap.
-        NScrollView {
-          id: mediaScroll
-          Layout.preferredWidth: mediaCard.implicitWidth
-          Layout.fillHeight: true
-          horizontalPolicy: ScrollBar.AlwaysOff
-          reserveScrollbarSpace: false
+        // Home, per dashboardlayout.txt - a 3x2 grid:
+        //
+        //   +---------------+---------------+---------------+
+        //   |               |   Calendar    |               |
+        //   | Media player  +---------------+ Notification  |
+        //   |               |  Widget grid  |               |
+        //   +---------------+---------------+---------------+
+        //
+        // Media and notifications are the outer columns and span both rows, so
+        // they get the full panel height. Calendar and the widget grid split the
+        // middle column. Because the panel size is fixed (see panelContent), the
+        // grid is handed a stable rectangle and no cell can size the panel back.
+        GridLayout {
+          id: homePage
+          columns: 4
+          columnSpacing: Style.marginS
+          rowSpacing: Style.marginS
 
           MediaPlayerCard {
             id: mediaCard
             screen: root.screen
-            width: mediaScroll.availableWidth
+            Layout.column: 0
+            Layout.row: 0
+            Layout.rowSpan: 2
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            // Width from the card's own cap, not its implicitWidth, so a long
+            // track title cannot widen the column and squeeze the middle one.
+            Layout.preferredWidth: contentImplicitWidth
           }
-        }
-
-        Item {
-          id: pageArea
-          implicitWidth: quickSettingsPage.contentImplicitWidth
-          Layout.fillWidth: true
-          Layout.fillHeight: true
-
-          // Quick Settings Page
-          QuickSettingsPage {
-            id: quickSettingsPage
-            anchors.fill: parent
-            screen: root.screen
-            visible: root._currentPage === root.pageQuickSettings
-            opacity: root._currentPage === root.pageQuickSettings ? 1 : 0
-
-            Behavior on opacity {
-              NumberAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCubic
-              }
-            }
-          }
-
-          // System Page
-          Rectangle {
-            id: systemPageWrapper
-            anchors.fill: parent
-            color: "transparent"
-            visible: root._currentPage === root.pageSystem
-            opacity: root._currentPage === root.pageSystem ? 1 : 0
-
-            Behavior on opacity {
-              NumberAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCubic
-              }
-            }
-
-            ColumnLayout {
-              id: systemColumn
-              anchors.fill: parent
-              // The outer layout already supplies the shared page inset.
-              // Keep this margin only for the system page's own content.
-              anchors.margins: Style.marginS
-              spacing: Style.marginM
-
-              // === SYSTEM PAGE HEADER HEIGHT ===
-              NBox {
-                Layout.fillWidth: true
-                implicitHeight: sysHeader.implicitHeight + Style.margin2M
-
-                RowLayout {
-                  id: sysHeader
-                  anchors.fill: parent
-                  anchors.margins: Style.marginM
-                  spacing: Style.marginM
-
-                  NIcon {
-                    icon: "device-analytics"
-                    pointSize: Style.fontSizeL
-                    color: Color.mPrimary
-                  }
-
-                  NText {
-                    text: "System"
-                    font.weight: Style.fontWeightBold
-                    pointSize: Style.fontSizeL
-                    color: Color.mOnSurface
-                    Layout.fillWidth: true
-                  }
-                }
-              }
-
-              SystemPage {
-                id: systemPage
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                screen: root.screen
-              }
-            }
-          }
-        }
-
-        // Calendar column — fixed width so the month grid keeps its aspect
-        NScrollView {
-          id: calendarScroll
-          Layout.preferredWidth: Math.round(300 * Style.uiScaleRatio)
-          Layout.fillHeight: true
-          horizontalPolicy: ScrollBar.AlwaysOff
-          reserveScrollbarSpace: false
 
           CalendarMonthCard {
-            width: calendarScroll.availableWidth
+            id: calendarCard
+            Layout.column: 1
+            Layout.row: 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: Math.round(300 * Style.uiScaleRatio)
+            Layout.preferredHeight: implicitHeight
+          }
+
+          QuickSettingsPage {
+            id: quickSettingsPage
+            screen: root.screen
+            Layout.column: 1
+            Layout.row: 1
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: contentImplicitWidth
+            // The page root is a Rectangle, so its implicitHeight is 0. Without
+            // this the row would claim no height and the calendar would absorb
+            // the whole middle column.
+            Layout.preferredHeight: contentImplicitHeight
+          }
+
+          NotificationCard {
+            id: notificationCard
+            Layout.column: 2
+            Layout.row: 0
+            Layout.rowSpan: 2
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: 320
           }
         }
 
-        // Notification history column — the same rows the Notification History
-        // panel renders, kept always visible on the dashboard
-        NotificationCard {
-          id: notificationCard
-          Layout.preferredWidth: Math.round(320 * Style.uiScaleRatio)
-          Layout.fillHeight: true
+        AIChatPage {
+          id: aiChatPage
+          screen: root.screen
+        }
+
+        WallpaperPage {
+          id: wallpaperPage
+          screen: root.screen
+          onCloseRequested: root.close()
         }
       }
     }

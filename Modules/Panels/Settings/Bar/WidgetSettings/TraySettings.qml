@@ -45,9 +45,9 @@ ColumnLayout {
     description: "When enabled, unpinned tray items are shown in a drawer panel.<br>When disabled, all tray items are shown inline."
     checked: root.valueDrawerEnabled
     onToggled: checked => {
-      root.valueDrawerEnabled = checked;
-      saveSettings();
-    }
+                 root.valueDrawerEnabled = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.drawerEnabled
   }
 
@@ -56,9 +56,9 @@ ColumnLayout {
     description: "Apply theme colors to the drawer chevron icon."
     currentKey: root.valueChevronColor
     onSelected: key => {
-      root.valueChevronColor = key;
-      saveSettings();
-    }
+                  root.valueChevronColor = key;
+                  saveSettings();
+                }
     visible: root.valueDrawerEnabled
     defaultValue: widgetMetadata.chevronColor
   }
@@ -69,9 +69,9 @@ ColumnLayout {
     description: "Apply theme colors to tray icons."
     checked: root.valueColorizeIcons
     onToggled: checked => {
-      root.valueColorizeIcons = checked;
-      saveSettings();
-    }
+                 root.valueColorizeIcons = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.colorizeIcons
   }
 
@@ -81,9 +81,9 @@ ColumnLayout {
     description: "When enabled, tray items with 'Passive' status will be hidden."
     checked: root.valueHidePassive
     onToggled: checked => {
-      root.valueHidePassive = checked;
-      saveSettings();
-    }
+                 root.valueHidePassive = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hidePassive
   }
 

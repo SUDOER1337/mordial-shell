@@ -82,12 +82,12 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: monitorCard.barEnabled
             onToggled: checked => {
-              if (checked) {
-                Settings.data.bar.monitors = root.addMonitor(Settings.data.bar.monitors, monitorCard.screenName);
-              } else {
-                Settings.data.bar.monitors = root.removeMonitor(Settings.data.bar.monitors, monitorCard.screenName);
-              }
-            }
+                         if (checked) {
+                           Settings.data.bar.monitors = root.addMonitor(Settings.data.bar.monitors, monitorCard.screenName);
+                         } else {
+                           Settings.data.bar.monitors = root.removeMonitor(Settings.data.bar.monitors, monitorCard.screenName);
+                         }
+                       }
           }
         }
 
@@ -109,9 +109,9 @@ ColumnLayout {
             description: "Use custom settings for this monitor."
             checked: monitorCard.overrideEnabled
             onToggled: checked => {
-              Settings.setScreenOverride(monitorCard.screenName, "enabled", checked);
-              BarService.widgetsRevision++;
-            }
+                         Settings.setScreenOverride(monitorCard.screenName, "enabled", checked);
+                         BarService.widgetsRevision++;
+                       }
           }
 
           // Override controls (only visible when override toggle is on)

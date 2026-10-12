@@ -150,7 +150,7 @@ Singleton {
     "antenna-bars-4": "antenna-bars-4",
     "antenna-bars-5": "antenna-bars-5",
     "antenna-bars-off": "antenna-bars-off",
-    "noctalia": "noctalia",
+    "mordial": "mordial",
     "hyprland": "hyprland",
     "filepicker-folder": "folder",
     "filepicker-refresh": "refresh",
@@ -177,9 +177,7 @@ Singleton {
     "filepicker-eye": "eye",
     "filepicker-eye-off": "eye-off",
     "filepicker-folder-current": "checks",
-    "plugin": "plug-connected",
-    "info": "file-description",
-    "official-plugin": "shield-filled"
+    "info": "file-description"
   }
 
   // Fonts Codepoints - do not change!
@@ -4369,7 +4367,7 @@ Singleton {
     "nfc": "\u{eeb7}",
     "nfc-off": "\u{f168}",
     "niri": "\u{ec32}",
-    "noctalia": "\u{ec33}",
+    "mordial": "\u{ec33}",
     "no-copyright": "\u{efb9}",
     "no-creative-commons": "\u{efba}",
     "no-derivatives": "\u{efbb}",

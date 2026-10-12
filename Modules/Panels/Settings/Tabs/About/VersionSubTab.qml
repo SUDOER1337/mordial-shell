@@ -4,8 +4,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.Compositor
+import qs.Services.Mordial
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -62,7 +62,7 @@ ColumnLayout {
         if (shellDir) {
           // Extract commit hash from path like: /nix/store/...-noctalia-shell-2025-11-30_225e6d3/share/noctalia-shell
           // Pattern matches: noctalia-shell-YYYY-MM-DD_<commit_hash>
-          var match = shellDir.match(/noctalia-shell-\d{4}-\d{2}-\d{2}_([0-9a-f]{7,})/i);
+          var match = shellDir.match(/mordial-shell-\d{4}-\d{2}-\d{2}_([0-9a-f]{7,})/i);
           if (match && match[1]) {
             // Use first 7 characters of the commit hash
             root.commitInfo = match[1].substring(0, 7);
@@ -167,7 +167,7 @@ ColumnLayout {
 
     // Installed Version (Shell)
     NText {
-      text: "Agnoctural Shell:"
+      text: "Mordial Shell:"
       color: Color.mOnSurfaceVariant
       Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
     }
@@ -203,7 +203,7 @@ ColumnLayout {
           onExited: TooltipService.hide()
           onClicked: {
             if (root.commitInfo) {
-              Quickshell.execDetached(["xdg-open", "https://github.com/noctalia-dev/noctalia-shell/commit/" + root.commitInfo]);
+              Quickshell.execDetached(["xdg-open", "https://github.com/SUDOER1337/mordial-shell/commit/" + root.commitInfo]);
             }
           }
         }

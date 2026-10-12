@@ -19,12 +19,12 @@ Scope {
   property string infoMessage: ""
 
   readonly property string pamConfigDirectory: "/etc/pam.d"
-  property string pamConfig: Quickshell.env("AGNOCTURNAL_PAM_SERVICE") || "login"
+  property string pamConfig: Quickshell.env("MORDIAL_PAM_SERVICE") || "login"
   property bool pamReady: false
 
   Component.onCompleted: {
-    if (Quickshell.env("AGNOCTURNAL_PAM_SERVICE")) {
-      Logger.i("LockContext", "AGNOCTURNAL_PAM_SERVICE is set, using system PAM config: /etc/pam.d/" + pamConfig);
+    if (Quickshell.env("MORDIAL_PAM_SERVICE")) {
+      Logger.i("LockContext", "MORDIAL_PAM_SERVICE is set, using system PAM config: /etc/pam.d/" + pamConfig);
       pamReady = true;
     } else {
       Logger.i("LockContext", "Probing for best PAM service...");
@@ -145,19 +145,19 @@ Scope {
     }
 
     onCompleted: result => {
-      Logger.i("LockContext", "PAM completed with result:", result);
-      if (result === PamResult.Success) {
-        Logger.i("LockContext", "Authentication successful");
-        root.unlocked();
-      } else {
-        Logger.i("LockContext", "Authentication failed");
-        root.currentText = "";
-        errorMessage = "Authentication failed";
-        showFailure = true;
-        root.failed();
-      }
-      root.unlockInProgress = false;
-    }
+                   Logger.i("LockContext", "PAM completed with result:", result);
+                   if (result === PamResult.Success) {
+                     Logger.i("LockContext", "Authentication successful");
+                     root.unlocked();
+                   } else {
+                     Logger.i("LockContext", "Authentication failed");
+                     root.currentText = "";
+                     errorMessage = "Authentication failed";
+                     showFailure = true;
+                     root.failed();
+                   }
+                   root.unlockInProgress = false;
+                 }
 
     onError: {
       Logger.i("LockContext", "PAM error:", error, "message:", message);

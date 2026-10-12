@@ -57,17 +57,17 @@ SmartPanel {
       }
       var total = 0;
       capable.forEach(m => {
-        total += isNaN(m.brightness) ? 0 : m.brightness;
-      });
+                        total += isNaN(m.brightness) ? 0 : m.brightness;
+                      });
       panelContent.currentBrightness = total / capable.length;
     }
 
     function applyBrightness(value) // Set brightness on all capable monitors
     {
       (BrightnessService.monitors || []).forEach(m => {
-        if (m && m.brightnessControlAvailable)
-          m.setBrightness(value);
-      });
+                                                   if (m && m.brightnessControlAvailable)
+                                                   m.setBrightness(value);
+                                                 });
     }
 
     ColumnLayout {

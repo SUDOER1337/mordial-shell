@@ -17,7 +17,7 @@ ColumnLayout {
 
   NToggle {
     label: "Enable notifications"
-    description: "Enable or disable the notification daemon, requires a restart of Noctalia shell."
+    description: "Enable or disable the notification daemon, requires a restart of Mordial shell."
     checked: Settings.data.notifications.enabled !== false
     onToggled: checked => Settings.data.notifications.enabled = checked
     defaultValue: Settings.getDefaultValue("notifications.enabled")
@@ -131,12 +131,12 @@ ColumnLayout {
         }
         checked: (Settings.data.notifications.monitors || []).indexOf(modelData.name) !== -1
         onToggled: checked => {
-          if (checked) {
-            Settings.data.notifications.monitors = root.addMonitor(Settings.data.notifications.monitors, modelData.name);
-          } else {
-            Settings.data.notifications.monitors = root.removeMonitor(Settings.data.notifications.monitors, modelData.name);
-          }
-        }
+                     if (checked) {
+                       Settings.data.notifications.monitors = root.addMonitor(Settings.data.notifications.monitors, modelData.name);
+                     } else {
+                       Settings.data.notifications.monitors = root.removeMonitor(Settings.data.notifications.monitors, modelData.name);
+                     }
+                   }
       }
     }
   }

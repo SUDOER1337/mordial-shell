@@ -1,6 +1,6 @@
-# AGENTS.md — Agnoctural Shell
+# AGENTS.md — Mordial Shell
 
-**Agnoctural** is an independent fork of Noctalia Shell v4: a minimal QML-based Wayland desktop shell built with Quickshell.
+**Mordial** is an independent fork of Noctalia Shell v4: a minimal QML-based Wayland desktop shell built with Quickshell.
 
 ---
 
@@ -10,7 +10,7 @@
 - **Framework**: Quickshell (via `noctalia-qs` fork)
 - **Main entry**: `shell.qml` (ShellRoot component)
 - **Package manager**: Nix flakes
-- **Config path**: `~/.config/agnocturnal/` (not `~/.config/noctalia/`)
+- **Config path**: `~/.config/mordial/` (not `~/.config/noctalia/`)
 
 ---
 
@@ -75,7 +75,7 @@ UI components — imported as `qs.Modules.*`:
 
 ### `Services/`
 Backend logic — imported as `qs.Services.*`:
-- **Agnocturnal/** — Fork-specific (config, migrations)
+- **Mordial/** — Fork-specific (config, migrations)
 - **Theming/** — Color schemes, wallpaper colors, dark mode
 - **Control/** — System controls (power, audio, brightness)
 - **Networking/** — Network status and WiFi
@@ -115,8 +115,8 @@ Python pipeline for MD3 color extraction:
 ## Environment Variables
 
 **Development**:
-- `AGNOCTURNAL_DEBUG=1` — Enable debug logging in shell
-- `QS_CONFIG_PATH` — Override config directory (defaults to `~/.config/agnocturnal/`)
+- `MORDIAL_DEBUG=1` — Enable debug logging in shell
+- `QS_CONFIG_PATH` — Override config directory (defaults to `~/.config/mordial/`)
 - `QT_LOGGING_RULES` — Control Qt debug output (used by qmlformat to suppress noise)
 
 **Build**:
@@ -157,9 +157,9 @@ Packaged via Nix, but agents should know these are required for full functionali
 ## Important Notes
 
 ### Config Migration
-- **Old Noctalia**: `~/.config/noctalia/` → **New Agnoctural**: `~/.config/agnocturnal/`
-- Environment variable: `AGNOCTURNAL_CONFIG_DIR`, `AGNOCTURNAL_CACHE_DIR`
-- Color scheme names changed: `"Noctalia (default)"` → `"Agnoctural (default)"`
+- **Old Noctalia**: `~/.config/noctalia/` → **New Mordial**: `~/.config/mordial/`
+- Environment variable: `MORDIAL_CONFIG_DIR`, `MORDIAL_CACHE_DIR`
+- Color scheme names changed: `"Noctalia (default)"` → `"Mordial (default)"`
 
 ### Nix Build Exclusions
 These files are excluded from the final package build (see `nix/package.nix`):
@@ -250,7 +250,7 @@ git add -A && lefthook run pre-commit
 
 ## Known Constraints
 
-1. **Quickshell Dependency**: Agnoctural depends on the `noctalia-qs` fork. If unmaintained, shell cannot be updated beyond current Quickshell capabilities.
+1. **Quickshell Dependency**: Mordial depends on the `noctalia-qs` fork. If unmaintained, shell cannot be updated beyond current Quickshell capabilities.
 2. **QML Only**: No C++ rewrites; architecture is QML-based by design.
 3. **Wayland Only**: X11 is not supported.
 4. **Not a Full DE**: Handles shell UI only—file manager, settings daemon, window manager, greeter are external.

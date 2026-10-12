@@ -4,16 +4,12 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Modules.DesktopWidgets.Widgets
-import qs.Services.Agnocturnal
 
 Singleton {
   id: root
 
   // Transient state - not persisted, resets on shell restart
   property bool editMode: false
-
-  // Signal emitted when plugin widgets are registered/unregistered
-  signal pluginWidgetRegistryUpdated
 
   // Component definitions
   property Component clockComponent: Component {
@@ -114,10 +110,6 @@ Singleton {
 
   property var cpuIntensiveWidgets: ["SystemStat", "AudioVisualizer"]
 
-  // Plugin widget storage (mirroring BarWidgetRegistry pattern)
-  property var pluginWidgets: ({})
-  property var pluginWidgetMetadata: ({})
-
   function init() {
     Logger.i("DesktopWidgetRegistry", "Service started");
   }
@@ -145,95 +137,12 @@ Singleton {
   }
 
   function isCpuIntensive(id) {
-    if (pluginWidgetMetadata[id]?.cpuIntensive)
-      return true;
     return cpuIntensiveWidgets.indexOf(id) >= 0;
-  }
-
-  // Check if a widget is a plugin widget
-  function isPluginWidget(id) {
-    return id.startsWith("plugin:");
-  }
-
-  // Get list of plugin widget IDs
-  function getPluginWidgets() {
-    return Object.keys(pluginWidgets);
   }
 
   // Get display name for a widget ID
   function getWidgetDisplayName(widgetId) {
-    if (widgetId.startsWith("plugin:")) {
-      var pluginId = widgetId.replace("plugin:", "");
-      var manifest = PluginRegistry.getPluginManifest(pluginId);
-      return manifest ? manifest.name : pluginId;
-    }
-    // Core widgets - return as-is (Clock, MediaPlayer, Weather, SystemStat)
     return widgetId;
-  }
-
-  // Register a plugin desktop widget
-  function registerPluginWidget(pluginId, component, metadata) {
-    if (!pluginId || !component) {
-      Logger.e("DesktopWidgetRegistry", "Cannot register plugin widget: invalid parameters");
-      return false;
-    }
-
-    var widgetId = "plugin:" + pluginId;
-
-    // Create new objects to trigger QML property change detection
-    var newPluginWidgets = Object.assign({}, pluginWidgets);
-    newPluginWidgets[widgetId] = component;
-    pluginWidgets = newPluginWidgets;
-
-    var newPluginMetadata = Object.assign({}, pluginWidgetMetadata);
-    newPluginMetadata[widgetId] = metadata || {};
-    pluginWidgetMetadata = newPluginMetadata;
-
-    // Also add to main widgets object for unified access - reassign to trigger change
-    var newWidgets = Object.assign({}, widgets);
-    newWidgets[widgetId] = component;
-    widgets = newWidgets;
-
-    var newMetadata = Object.assign({}, widgetMetadata);
-    newMetadata[widgetId] = Object.assign({}, {
-                                            "showBackground": true
-                                          }, metadata || {});
-    widgetMetadata = newMetadata;
-
-    Logger.i("DesktopWidgetRegistry", "Registered plugin widget:", widgetId);
-    root.pluginWidgetRegistryUpdated();
-    return true;
-  }
-
-  // Unregister a plugin desktop widget
-  function unregisterPluginWidget(pluginId) {
-    var widgetId = "plugin:" + pluginId;
-
-    if (!pluginWidgets[widgetId]) {
-      Logger.w("DesktopWidgetRegistry", "Plugin widget not registered:", widgetId);
-      return false;
-    }
-
-    // Create new objects without the widget to trigger QML property change detection
-    var newPluginWidgets = Object.assign({}, pluginWidgets);
-    delete newPluginWidgets[widgetId];
-    pluginWidgets = newPluginWidgets;
-
-    var newPluginMetadata = Object.assign({}, pluginWidgetMetadata);
-    delete newPluginMetadata[widgetId];
-    pluginWidgetMetadata = newPluginMetadata;
-
-    var newWidgets = Object.assign({}, widgets);
-    delete newWidgets[widgetId];
-    widgets = newWidgets;
-
-    var newMetadata = Object.assign({}, widgetMetadata);
-    delete newMetadata[widgetId];
-    widgetMetadata = newMetadata;
-
-    Logger.i("DesktopWidgetRegistry", "Unregistered plugin widget:", widgetId);
-    root.pluginWidgetRegistryUpdated();
-    return true;
   }
 
   function updateWidgetData(monitorName, widgetIndex, properties) {
@@ -272,16 +181,7 @@ Singleton {
       root.currentSettingsDialog = null;
     }
 
-    var hasSettings = false;
-    if (root.isPluginWidget(widgetId)) {
-      var pluginId = widgetId.replace("plugin:", "");
-      var manifest = PluginRegistry.getPluginManifest(pluginId);
-      if (manifest && manifest.entryPoints && (manifest.entryPoints.desktopWidgetSettings || manifest.entryPoints.settings)) {
-        hasSettings = true;
-      }
-    } else {
-      hasSettings = root.widgetSettingsMap[widgetId] !== undefined;
-    }
+    var hasSettings = root.widgetSettingsMap[widgetId] !== undefined;
 
     if (!hasSettings) {
       Logger.w("DesktopWidgetRegistry", "Widget does not have settings:", widgetId);
@@ -312,17 +212,17 @@ Singleton {
       if (dialog) {
         root.currentSettingsDialog = dialog;
         dialog.updateWidgetSettings.connect((sec, idx, settings) => {
-          root.updateWidgetData(sec, idx, settings);
-        });
+                                              root.updateWidgetData(sec, idx, settings);
+                                            });
         popupMenuWindow.hasDialog = true;
         dialog.closed.connect(() => {
-          popupMenuWindow.hasDialog = false;
-          popupMenuWindow.close();
-          if (root.currentSettingsDialog === dialog) {
-            root.currentSettingsDialog = null;
-          }
-          dialog.destroy();
-        });
+                                popupMenuWindow.hasDialog = false;
+                                popupMenuWindow.close();
+                                if (root.currentSettingsDialog === dialog) {
+                                  root.currentSettingsDialog = null;
+                                }
+                                dialog.destroy();
+                              });
         dialog.open();
       } else {
         Logger.e("DesktopWidgetRegistry", "Failed to create widget settings dialog");
@@ -335,12 +235,12 @@ Singleton {
       Logger.e("DesktopWidgetRegistry", "Error loading settings dialog component:", component.errorString());
     } else {
       component.statusChanged.connect(() => {
-        if (component.status === Component.Ready) {
-          instantiateAndOpen();
-        } else if (component.status === Component.Error) {
-          Logger.e("DesktopWidgetRegistry", "Error loading settings dialog component:", component.errorString());
-        }
-      });
+                                        if (component.status === Component.Ready) {
+                                          instantiateAndOpen();
+                                        } else if (component.status === Component.Error) {
+                                          Logger.e("DesktopWidgetRegistry", "Error loading settings dialog component:", component.errorString());
+                                        }
+                                      });
     }
   }
 }

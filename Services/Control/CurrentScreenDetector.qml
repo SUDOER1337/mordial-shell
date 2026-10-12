@@ -154,7 +154,7 @@ Item {
                         implicitHeight: 0
                         color: "transparent"
                         WlrLayershell.exclusionMode: ExclusionMode.Ignore
-                        WlrLayershell.namespace: "agnocturnal-screen-detector"
+                        WlrLayershell.namespace: "mordial-screen-detector"
                         mask: Region {}
 
                         onScreenChanged: root.screenDetected(screen)

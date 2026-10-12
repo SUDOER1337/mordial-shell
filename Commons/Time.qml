@@ -134,24 +134,30 @@ Singleton {
     return parts.join(' ');
   }
 
-  // Format a date into
+  // Format a date into a relative "x ago" string. Callers pass either a Date or
+  // a Unix millisecond timestamp — NotificationService stores notification
+  // timestamps as plain numbers — so accept both here instead of making every
+  // caller wrap the value in new Date() (and get a TypeError when it doesn't).
   function formatRelativeTime(date) {
     if (!date)
       return "";
-    const diff = Date.now() - date.getTime();
+    const ms = date instanceof Date ? date.getTime() : Number(date);
+    if (!Number.isFinite(ms))
+      return "";
+    const diff = Date.now() - ms;
     if (diff < 60000)
       return "now";
     if (diff < 120000)
       return "1 minute ago";
     if (diff < 3600000)
-      return "{diff} minutes ago";
+      return `${Math.floor(diff / 60000)} minutes ago`;
     if (diff < 7200000)
       return "1 hour ago";
     if (diff < 86400000)
-      return "{diff} hours ago";
+      return `${Math.floor(diff / 3600000)} hours ago`;
     if (diff < 172800000)
       return "1 day ago";
-    return "{diff} days ago";
+    return `${Math.floor(diff / 86400000)} days ago`;
   }
 
   // Timer functions

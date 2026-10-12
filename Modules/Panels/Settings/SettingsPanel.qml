@@ -13,6 +13,7 @@ SmartPanel {
   // Tabs enumeration, order is NOT relevant
   enum Tab {
     About,
+    AIChat,
     Audio,
     Bar,
     ColorScheme,
@@ -29,7 +30,6 @@ SmartPanel {
     Location,
     Connections,
     Notifications,
-    Plugins,
     SessionMenu,
     System,
     UserInterface,
@@ -145,8 +145,8 @@ SmartPanel {
         const entry = requestedEntry;
         requestedEntry = null;
         Qt.callLater(() => {
-          return _settingsContent.navigateToResult(entry);
-        });
+                       return _settingsContent.navigateToResult(entry);
+                     });
       } else {
         _settingsContent.requestedTab = requestedTab;
         if (requestedSubTab >= 0) {
@@ -180,8 +180,8 @@ SmartPanel {
           return settingsContent.activeScrollView;
         });
         settingsContent.closeRequested.connect(() => {
-          return root.close();
-        });
+                                                 return root.close();
+                                               });
       }
     }
   }

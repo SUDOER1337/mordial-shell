@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Modules.MainScreen
-import qs.Services.Agnocturnal
+import qs.Services.Mordial
 import qs.Services.UI
 import qs.Widgets
 
@@ -34,7 +34,7 @@ SmartPanel {
       const color = Color.mPrimary;
       return text.replace(/^# (.*)$/gm, `<br/><h1 style="color:${color}">$1</h1><br/>`).replace(/^## (.*)$/gm, `<br/><h2 style="color:${color}">$1</h2><br/>`);
     }
-    readonly property string subtitleText: hasPreviousVersion ? "Updated from {previousVersion}" : "Thanks for installing Noctalia! Here is what’s included in this build."
+    readonly property string subtitleText: hasPreviousVersion ? "Updated from {previousVersion}" : "Thanks for installing Mordial! Here is what’s included in this build."
 
     ColumnLayout {
       anchors.fill: parent

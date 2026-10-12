@@ -1,5 +1,5 @@
 {
-  description = "Agnoctural shell - independent fork of Noctalia (Qt/QML based Wayland shell built with Quickshell)";
+  description = "Mordial shell - independent fork of Noctalia (Qt/QML based Wayland shell built with Quickshell)";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -39,14 +39,14 @@
       formatter = eachSystem (system: pkgsFor.${system}.nixfmt);
 
       packages = eachSystem (system: {
-        default = pkgsFor.${system}.agnoctural-shell;
+        default = pkgsFor.${system}.mordial-shell;
       });
 
       overlays = {
         default = nixpkgs.lib.composeManyExtensions [
           noctalia-qs.overlays.default
           (final: prev: {
-            agnoctural-shell = final.callPackage ./nix/package.nix {
+            mordial-shell = final.callPackage ./nix/package.nix {
               inherit version;
             };
           })
@@ -67,7 +67,7 @@
         }:
         {
           imports = [ ./nix/home-module.nix ];
-          programs.agnoctural-shell.package =
+          programs.mordial-shell.package =
             lib.mkDefault
               self.packages.${pkgs.stdenv.hostPlatform.system}.default;
         };
@@ -80,7 +80,7 @@
         }:
         {
           imports = [ ./nix/nixos-module.nix ];
-          services.agnoctural-shell.package =
+          services.mordial-shell.package =
             lib.mkDefault
               self.packages.${pkgs.stdenv.hostPlatform.system}.default;
         };

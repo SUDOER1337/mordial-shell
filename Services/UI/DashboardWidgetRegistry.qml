@@ -95,65 +95,7 @@ Singleton {
     return widgetMetadata[id] !== undefined;
   }
 
-  // ------------------------------
-  // Plugin widget registration
-
-  // Track plugin widgets separately
-  property var pluginWidgets: ({})
-  property var pluginWidgetMetadata: ({})
-
-  // Register a plugin widget
-  function registerPluginWidget(pluginId, component, metadata) {
-    if (!pluginId || !component) {
-      Logger.e("DashboardWidgetRegistry", "Cannot register plugin widget: invalid parameters");
-      return false;
-    }
-
-    // Add plugin: prefix to avoid conflicts with core widgets
-    var widgetId = "plugin:" + pluginId;
-
-    pluginWidgets[widgetId] = component;
-    pluginWidgetMetadata[widgetId] = metadata || {};
-
-    // Also add to main widgets object for unified access
-    widgets[widgetId] = component;
-    widgetMetadata[widgetId] = metadata || {};
-
-    Logger.i("DashboardWidgetRegistry", "Registered plugin widget:", widgetId);
-    return true;
-  }
-
-  // Unregister a plugin widget
-  function unregisterPluginWidget(pluginId) {
-    var widgetId = "plugin:" + pluginId;
-
-    if (!pluginWidgets[widgetId]) {
-      Logger.w("DashboardWidgetRegistry", "Plugin widget not registered:", widgetId);
-      return false;
-    }
-
-    delete pluginWidgets[widgetId];
-    delete pluginWidgetMetadata[widgetId];
-    delete widgets[widgetId];
-    delete widgetMetadata[widgetId];
-
-    Logger.i("DashboardWidgetRegistry", "Unregistered plugin widget:", widgetId);
-    return true;
-  }
-
-  // Check if a widget is a plugin widget
-  function isPluginWidget(id) {
-    return id.startsWith("plugin:");
-  }
-
-  // Get list of plugin widget IDs
-  function getPluginWidgets() {
-    return Object.keys(pluginWidgets);
-  }
-
   function isCpuIntensive(id) {
-    if (pluginWidgetMetadata[id]?.cpuIntensive)
-      return true;
     return cpuIntensiveWidgets.indexOf(id) >= 0;
   }
 }

@@ -80,6 +80,11 @@ Singleton {
   readonly property int shadowBlurMax: 22
   readonly property real shadowHorizontalOffset: Settings.data.general.shadowOffsetX
   readonly property real shadowVerticalOffset: Settings.data.general.shadowOffsetY
+  // Space a card must reserve on every side for its NDropShadow to render
+  // unclipped. Anything that stacks floating cards (notification popup, toasts,
+  // notification list rows) offsets this back out again with negative spacing so
+  // the visible gap between two cards stays a plain margin.
+  readonly property int cardShadowPadding: shadowBlurMax + marginL
 
   // Animation duration (ms)
   readonly property int animationFaster: Settings.data.general.animationDisabled ? 0 : Math.round(75 / Settings.data.general.animationSpeed)
@@ -153,7 +158,7 @@ Singleton {
 
   readonly property color capsuleColor: Settings.data.bar.showCapsule ? Qt.alpha(Settings.data.bar.capsuleColorKey !== "none" ? Color.resolveColorKey(Settings.data.bar.capsuleColorKey) : Color.mSurfaceVariant, Settings.data.bar.capsuleOpacity) : "transparent"
 
-  readonly property color capsuleBorderColor: Settings.data.bar.showOutline ? Color.mPrimary : "transparent"
+  readonly property color capsuleBorderColor: Settings.data.bar.showOutline ? Qt.alpha(Color.resolveColorKey(Settings.data.bar.outlineColorKey), Settings.data.bar.outlineOpacity ?? 1.0) : "transparent"
   readonly property int capsuleBorderWidth: Settings.data.bar.showOutline ? Style.borderS : 0
 
   readonly property color boxBorderColor: Settings.data.ui.boxBorderEnabled ? Color.mOutline : "transparent"

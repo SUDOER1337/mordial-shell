@@ -47,15 +47,15 @@ ColumnLayout {
 
   // Startup Hook
   HookRow {
-    label: "Noctalia started"
-    description: "Command to execute when Noctalia has finished loading."
+    label: "Mordial started"
+    description: "Command to execute when Mordial has finished loading."
     value: Settings.data.hooks.startup
-    onEditClicked: openEdit(label, description, "e.g. notify-send 'Noctalia Loaded'", value, newValue => {
-      Settings.data.hooks.startup = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      HooksService.executeStartupHook();
-    })
+    onEditClicked: openEdit(label, description, "e.g. notify-send 'Mordial Loaded'", value, newValue => {
+                              Settings.data.hooks.startup = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              HooksService.executeStartupHook();
+                            })
   }
 
   // Wallpaper Hook
@@ -64,12 +64,12 @@ ColumnLayout {
     description: "Command to be executed when wallpaper changes."
     value: Settings.data.hooks.wallpaperChange
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Wallpaper\" \"Changed\"", value, newValue => {
-      Settings.data.hooks.wallpaperChange = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val.replace("$1", "test_wallpaper_path").replace("$2", "test_screen").replace("$3", "dark")]);
-    })
+                              Settings.data.hooks.wallpaperChange = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val.replace("$1", "test_wallpaper_path").replace("$2", "test_screen").replace("$3", "dark")]);
+                            })
   }
 
   // Color Generation Hook
@@ -78,12 +78,12 @@ ColumnLayout {
     description: "Command to be executed when color generation completes (e.g. after wallpaper-based theming)."
     value: Settings.data.hooks.colorGeneration
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Colors\" \"Generated\"", value, newValue => {
-      Settings.data.hooks.colorGeneration = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val.replace("$1", "dark")]);
-    })
+                              Settings.data.hooks.colorGeneration = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val.replace("$1", "dark")]);
+                            })
   }
 
   // Theme Hook
@@ -92,12 +92,12 @@ ColumnLayout {
     description: "Command to be executed when theme toggles between Dark and Light Mode."
     value: Settings.data.hooks.darkModeChange
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Theme\" \"Toggled\"", value, newValue => {
-      Settings.data.hooks.darkModeChange = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val.replace("$1", "true")]);
-    })
+                              Settings.data.hooks.darkModeChange = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val.replace("$1", "true")]);
+                            })
   }
 
   // Screen Lock Hook
@@ -106,12 +106,12 @@ ColumnLayout {
     description: "Command to be executed when the screen is locked."
     value: Settings.data.hooks.screenLock
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Screen\" \"Locked\"", value, newValue => {
-      Settings.data.hooks.screenLock = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val]);
-    })
+                              Settings.data.hooks.screenLock = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val]);
+                            })
   }
 
   // Screen Unlock Hook
@@ -120,12 +120,12 @@ ColumnLayout {
     description: "Command to be executed when the lock screen is unlocked."
     value: Settings.data.hooks.screenUnlock
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Screen\" \"Unlocked\"", value, newValue => {
-      Settings.data.hooks.screenUnlock = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val]);
-    })
+                              Settings.data.hooks.screenUnlock = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val]);
+                            })
   }
 
   // Session Hook
@@ -134,11 +134,11 @@ ColumnLayout {
     description: "Command to be executed before shutdown or reboot. Receives action type as $1 (shutdown/reboot)."
     value: Settings.data.hooks.session
     onEditClicked: openEdit(label, description, "e.g. notify-send \"Session\" \"$1\"", value, newValue => {
-      Settings.data.hooks.session = newValue;
-      Settings.saveImmediate();
-    }, val => {
-      if (val)
-        Quickshell.execDetached(["sh", "-lc", val + " test"]);
-    })
+                              Settings.data.hooks.session = newValue;
+                              Settings.saveImmediate();
+                            }, val => {
+                              if (val)
+                              Quickshell.execDetached(["sh", "-lc", val + " test"]);
+                            })
   }
 }

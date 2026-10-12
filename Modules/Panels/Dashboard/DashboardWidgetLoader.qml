@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.UI
 
 Item {
@@ -22,35 +21,12 @@ Item {
     return (item && item.visible) ? item[prop] : 0;
   }
 
-  readonly property bool _isPlugin: DashboardWidgetRegistry.isPluginWidget(widgetId)
-
-  function _loadPluginWidget() {
-    var comp = DashboardWidgetRegistry.getWidget(widgetId);
-    if (!comp)
-      return;
-    var pluginId = widgetId.substring(7); // Remove "plugin:" prefix
-    var api = PluginService.getPluginAPI(pluginId);
-    loader.setSource(comp.url, api ? {
-                                       "pluginApi": api
-                                     } : {});
-  }
-
   Loader {
     id: loader
     anchors.fill: parent
     asynchronous: false
 
-    // Core widgets use sourceComponent; plugin widgets use setSource()
-    // so pluginApi is available from the first binding evaluation.
-    Component.onCompleted: {
-      if (root._isPlugin) {
-        root._loadPluginWidget();
-      } else {
-        sourceComponent = Qt.binding(function () {
-          return DashboardWidgetRegistry.getWidget(widgetId);
-        });
-      }
-    }
+    sourceComponent: DashboardWidgetRegistry.getWidget(widgetId)
 
     onLoaded: {
       if (!item)

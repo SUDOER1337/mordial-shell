@@ -2,6 +2,7 @@
 .zed
 .idea
 .vscode
+Ambxst
 *.code-workspace
 RELEASE.md
 __pycache__

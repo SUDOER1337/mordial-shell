@@ -36,7 +36,6 @@ Rectangle {
   property var providers: []
   property var activeProvider: null
   property bool resultsReady: false
-  property var pluginProviderInstances: ({})
   property bool ignoreMouseHover: true // Transient flag, should always be true on init
 
   // Global mouse tracking for movement detection across delegates
@@ -143,14 +142,7 @@ Rectangle {
     return provider && provider.wrapNavigation !== undefined ? provider.wrapNavigation : true;
   }
 
-  // Listen for plugin provider registry changes
-  Connections {
-    target: LauncherProviderRegistry
-    function onPluginProviderRegistryUpdated() {
-      root.syncPluginProviders();
-    }
-  }
-
+  // Listen for provider registry changes
   // Lifecycle
   onIsOpenChanged: {
     if (isOpen) {
@@ -177,13 +169,12 @@ Rectangle {
     focusSearchInput();
 
     Qt.callLater(() => {
-      syncPluginProviders();
-      for (let provider of providers) {
-        if (provider.onOpened)
-          provider.onOpened();
-      }
-      updateResults();
-    });
+                   for (let provider of providers) {
+                     if (provider.onOpened)
+                     provider.onOpened();
+                   }
+                   updateResults();
+                 });
   }
 
   function onClosed() {
@@ -252,43 +243,6 @@ Rectangle {
       provider.init();
   }
 
-  function syncPluginProviders() {
-    var registeredIds = LauncherProviderRegistry.getPluginProviders();
-    var changed = false;
-
-    // Remove providers that are no longer registered
-    for (var existingId in pluginProviderInstances) {
-      if (registeredIds.indexOf(existingId) === -1) {
-        var idx = providers.indexOf(pluginProviderInstances[existingId]);
-        if (idx >= 0)
-          providers.splice(idx, 1);
-        delete pluginProviderInstances[existingId];
-        Logger.d("Launcher", "Removed plugin provider:", existingId);
-        changed = true;
-      }
-    }
-
-    // Adopt persistent instances from the registry
-    for (var i = 0; i < registeredIds.length; i++) {
-      var providerId = registeredIds[i];
-      if (!pluginProviderInstances[providerId]) {
-        var instance = LauncherProviderRegistry.getProviderInstance(providerId);
-        if (instance) {
-          pluginProviderInstances[providerId] = instance;
-          providers.push(instance);
-          instance.launcher = root;
-          Logger.d("Launcher", "Adopted plugin provider:", providerId);
-          changed = true;
-        }
-      }
-    }
-
-    // Update results only if providers changed
-    if (changed && root.isOpen) {
-      updateResults();
-    }
-  }
-
   // Search handling
   function updateResults() {
     results = [];
@@ -342,22 +296,22 @@ Rectangle {
         const boostByUsage = Settings.data.appLauncher.sortByMostUsed;
 
         allResults.sort((a, b) => {
-          let sa = a._score !== undefined ? a._score : 0;
-          let sb = b._score !== undefined ? b._score : 0;
+                          let sa = a._score !== undefined ? a._score : 0;
+                          let sb = b._score !== undefined ? b._score : 0;
 
-          // Boost scores for frequently used items from tracked providers
-          // _score is normalized 0–1, so boost is scaled to nudge, not overwhelm
-          if (boostByUsage) {
-            if (a.provider && a.provider.trackUsage && a.usageKey) {
-              sa += 0.1 * Math.log2(1 + ShellState.getLauncherUsageCount(a.usageKey));
-            }
-            if (b.provider && b.provider.trackUsage && b.usageKey) {
-              sb += 0.1 * Math.log2(1 + ShellState.getLauncherUsageCount(b.usageKey));
-            }
-          }
+                          // Boost scores for frequently used items from tracked providers
+                          // _score is normalized 0–1, so boost is scaled to nudge, not overwhelm
+                          if (boostByUsage) {
+                            if (a.provider && a.provider.trackUsage && a.usageKey) {
+                              sa += 0.1 * Math.log2(1 + ShellState.getLauncherUsageCount(a.usageKey));
+                            }
+                            if (b.provider && b.provider.trackUsage && b.usageKey) {
+                              sb += 0.1 * Math.log2(1 + ShellState.getLauncherUsageCount(b.usageKey));
+                            }
+                          }
 
-          return sb - sa;
-        });
+                          return sb - sa;
+                        });
       }
       results = allResults;
     }
@@ -421,8 +375,8 @@ Rectangle {
           item.onAutoPaste();
         closeImmediately();
         Qt.callLater(() => {
-          ClipboardService.pasteText(item.autoPasteText);
-        });
+                       ClipboardService.pasteText(item.autoPasteText);
+                     });
         return;
       }
 
@@ -860,11 +814,11 @@ Rectangle {
             }
 
             Qt.callLater(() => {
-              if (root.isGridView && resultsGrid && resultsGrid.cancelFlick) {
-                resultsGrid.cancelFlick();
-                resultsGrid.positionViewAtIndex(root.selectedIndex, GridView.Contain);
-              }
-            });
+                           if (root.isGridView && resultsGrid && resultsGrid.cancelFlick) {
+                             resultsGrid.cancelFlick();
+                             resultsGrid.positionViewAtIndex(root.selectedIndex, GridView.Contain);
+                           }
+                         });
           }
         }
 

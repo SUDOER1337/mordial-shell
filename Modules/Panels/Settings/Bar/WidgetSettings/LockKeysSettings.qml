@@ -46,9 +46,9 @@ ColumnLayout {
       description: "Display Caps Lock status."
       checked: valueShowCapsLock
       onToggled: checked => {
-        valueShowCapsLock = checked;
-        saveSettings();
-      }
+                   valueShowCapsLock = checked;
+                   saveSettings();
+                 }
       defaultValue: widgetMetadata.showCapsLock
     }
 
@@ -84,9 +84,9 @@ ColumnLayout {
       description: "Display Num Lock status."
       checked: valueShowNumLock
       onToggled: checked => {
-        valueShowNumLock = checked;
-        saveSettings();
-      }
+                   valueShowNumLock = checked;
+                   saveSettings();
+                 }
       defaultValue: widgetMetadata.showNumLock
     }
 
@@ -122,9 +122,9 @@ ColumnLayout {
       description: "Display Scroll Lock status."
       checked: valueShowScrollLock
       onToggled: checked => {
-        valueShowScrollLock = checked;
-        saveSettings();
-      }
+                   valueShowScrollLock = checked;
+                   saveSettings();
+                 }
       defaultValue: widgetMetadata.showScrollLock
     }
 
@@ -162,9 +162,9 @@ ColumnLayout {
     description: "Hide the indicator when the key is not active."
     checked: valueHideWhenOff
     onToggled: checked => {
-      valueHideWhenOff = checked;
-      saveSettings();
-    }
+                 valueHideWhenOff = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideWhenOff
   }
 }

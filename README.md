@@ -1,4 +1,4 @@
-# Agnoctural Shell
+# Mordial Shell
 
 > Independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) v4. Noctalia is now v5 (C++), so this fork maintains the original QML-based shell for continued use.
 
@@ -26,20 +26,20 @@ A minimal desktop shell for Wayland built on [Quickshell](https://quickshell.org
 **Via Nix:**
 
 ```bash
-nix run github:SUDOER1337/agnocturnal-shell
+nix run github:SUDOER1337/mordial-shell
 ```
 
 **Via NixOS (home-manager):**
 
 ```nix
-programs.agnoctural-shell = {
+programs.mordial-shell = {
   enable = true;
 };
 ```
 
 ## Configuration
 
-Config files: `~/.config/agnocturnal/`
+Config files: `~/.config/mordial/`
 
 - `settings.json` — Main settings
 - `colors.json` — Current color scheme (auto-generated)
@@ -47,17 +47,17 @@ Config files: `~/.config/agnocturnal/`
 
 Environment variables:
 
-- `AGNOCTURNAL_CONFIG_DIR` — Override config directory
-- `AGNOCTURNAL_CACHE_DIR` — Override cache directory
-- `AGNOCTURNAL_DEBUG` — Enable debug logging
+- `MORDIAL_CONFIG_DIR` — Override config directory
+- `MORDIAL_CACHE_DIR` — Override cache directory
+- `MORDIAL_DEBUG` — Enable debug logging
 
 ## Development
 
 Setup:
 
 ```bash
-git clone https://github.com/SUDOER1337/agnocturnal-shell
-cd agnocturnal-shell
+git clone https://github.com/SUDOER1337/mordial-shell
+cd mordial-shell
 nix flake show
 ```
 
@@ -75,7 +75,7 @@ nix build
 
 ## Scope
 
-Agnoctural is a **desktop shell**, not a full desktop environment. It handles the visual layer (bars, panels, notifications, widgets) but not file management, display greeter, window management/tiling, or system login.
+Mordial is a **desktop shell**, not a full desktop environment. It handles the visual layer (bars, panels, notifications, widgets) but not file management, display greeter, window management/tiling, or system login.
 
 ## Documentation
 
@@ -87,7 +87,7 @@ Most Noctalia v4 documentation applies:
 
 ## Credits
 
-- **Agnoctural Fork**: Maintained by Nullfjord (SUDOER1337)
+- **Mordial Fork**: Maintained by Nullfjord (SUDOER1337)
 - **Original Noctalia**: [noctalia-dev](https://github.com/noctalia-dev/noctalia-shell)
 - **Quickshell**: [quickshell.org](https://quickshell.org/)
 
@@ -97,6 +97,6 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ## Links
 
-- [GitHub (this fork)](https://github.com/SUDOER1337/agnocturnal-shell)
+- [GitHub (this fork)](https://github.com/SUDOER1337/mordial-shell)
 - [Original Noctalia](https://github.com/noctalia-dev/noctalia-shell)
 - [Noctalia v5](https://noctalia.dev)

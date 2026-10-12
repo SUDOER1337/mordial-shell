@@ -16,9 +16,13 @@ import qs.Widgets.AudioSpectrum
 // rendering as a fixed top card inside the combined Dashboard.
 //
 // The card uses a portrait layout: album art on top, then metadata, seek bar
-// and transport controls stacked in a centered column. All other visual
+// and transport controls stacked in a column that is centred on both axes. The
+// dashboard grid stretches the card wider and taller than that column, so
+// anything that fills the card instead of the column would drift off-axis -
+// hence the spacers and per-element centring further down. All other visual
 // settings (visualizer type, scrolling mode, album art toggle, album art
-// size) come from the MediaMini bar widget's settings.
+// size) come from the MediaMini bar widget's settings; the blurred album
+// art backdrop and the album art frame come from Settings ▸ Dashboard ▸ Media.
 // ============================================================
 NBox {
   id: root
@@ -52,19 +56,41 @@ NBox {
 
   readonly property string visualizerType: (mediaMiniSettings && mediaMiniSettings.visualizerType !== undefined) ? mediaMiniSettings.visualizerType : "linear"
   readonly property bool showArtistFirst: !!(mediaMiniSettings && mediaMiniSettings.showArtistFirst !== undefined ? mediaMiniSettings.showArtistFirst : true)
+  readonly property bool showTrackTitle: !!(mediaMiniSettings && mediaMiniSettings.showTrackTitle !== undefined ? mediaMiniSettings.showTrackTitle : true)
+  readonly property bool showArtist: !!(mediaMiniSettings && mediaMiniSettings.showArtist !== undefined ? mediaMiniSettings.showArtist : true)
   readonly property bool showAlbumArt: !!(mediaMiniSettings && mediaMiniSettings.panelShowAlbumArt !== undefined ? mediaMiniSettings.panelShowAlbumArt : true)
   readonly property bool showVisualizer: !!(mediaMiniSettings && mediaMiniSettings.showVisualizer !== undefined ? mediaMiniSettings.showVisualizer : true)
   readonly property string panelVisualizerPlacement: (mediaMiniSettings && mediaMiniSettings.panelVisualizerPlacement !== undefined) ? mediaMiniSettings.panelVisualizerPlacement : "art"
-  readonly property int panelAlbumArtSize: (mediaMiniSettings && mediaMiniSettings.panelAlbumArtSize !== undefined) ? mediaMiniSettings.panelAlbumArtSize : 180
+  // 0 = fill whatever the card has left; otherwise an absolute size in
+  // unscaled px. The fallback reads the registry rather than repeating the
+  // number, so the card and the settings page can never disagree on the default.
+  readonly property int panelAlbumArtSize: (mediaMiniSettings && mediaMiniSettings.panelAlbumArtSize !== undefined) ? mediaMiniSettings.panelAlbumArtSize : (BarWidgetRegistry.widgetMetadata["MediaMini"].panelAlbumArtSize ?? 0)
+  // Shared with MediaMiniSettings so the slider cannot offer a size this card
+  // then rejects. The card additionally clamps to its own column width, which
+  // is the tighter of the two in practice.
+  readonly property real albumArtSizeMax: BarWidgetRegistry.widgetSettingBounds["MediaMini"].panelAlbumArtSize[1]
   readonly property string scrollingMode: (mediaMiniSettings && mediaMiniSettings.scrollingMode !== undefined) ? mediaMiniSettings.scrollingMode : "hover"
+
+  // === Dashboard settings (Settings ▸ Dashboard ▸ Media) ===
+  // Frame drawn around the album artwork. A width of 0 draws no frame, which
+  // is why the settings page hides the colour picker at that value rather than
+  // leaving a control with nothing to tint.
+  readonly property real albumArtFrameWidth: Math.max(0, Settings.data.dashboard.mediaCard.frameWidth) * Style.uiScaleRatio
+  readonly property color albumArtFrameColor: Settings.data.dashboard.mediaCard.frameColor
 
   // Embedded card: narrow full-height column, content column centered and
   // width-capped. The header pill and the album art are both capped to stay
   // inside this width, so a long MPRIS identity or an oversized art setting
   // cannot push the column wider than intended.
-  readonly property real cardContentWidth: Math.round(216 * Style.uiScaleRatio)
-  readonly property real maxArtSize: 200
+  readonly property real cardContentWidth: Math.round(320 * Style.uiScaleRatio)
   readonly property real contentImplicitWidth: Math.max(headerRow.implicitWidth, root.cardContentWidth) + Style.margin2S
+  // Width the seek bar and the playback buttons aim for, as a share of the
+  // content column. They used to span the column minus a fixed margin, which
+  // read as flush to the edges next to a full-width album square; a ratio keeps
+  // both blocks visibly narrower than the artwork at any UI scale. Raise it to
+  // widen them, lower it to tighten; 1 spans the whole column.
+  readonly property real controlWidthRatio: 0.78
+  readonly property real controlSideMargin: Math.round(root.cardContentWidth * (1 - root.controlWidthRatio) / 2)
 
   readonly property bool isPanelOpen: {
     const p = PanelService.getPanel("dashboardPanel", root.screen);
@@ -93,6 +119,9 @@ NBox {
 
   implicitHeight: mainLayout.implicitHeight + Style.margin2S
   implicitWidth: contentImplicitWidth
+  // Artwork is sized from the height the layout hands this card, so clip as a
+  // guarantee that a short cell can never bleed into the neighbouring one.
+  clip: true
 
   Item {
     anchors.fill: parent
@@ -115,18 +144,21 @@ NBox {
     Image {
       id: blurredCover
       readonly property int dim: Math.round(256 * Style.uiScaleRatio)
+      // Treated as a single switch: a 0 strength is skipped by the card
+      // entirely so the layer is not left running a no-op shader pass.
+      readonly property bool blurActive: Settings.data.dashboard.mediaBlur.enabled && Settings.data.dashboard.mediaBlur.strength > 0
       anchors.fill: parent
-      visible: source.toString() !== ""
+      visible: blurActive && source.toString() !== ""
       source: MediaService.trackArtUrl
       sourceSize: Qt.size(dim, dim)
       fillMode: Image.PreserveAspectCrop
-      layer.enabled: true
+      layer.enabled: blurActive
       layer.smooth: true
       layer.effect: MultiEffect {
         autoPaddingEnabled: false
         blurEnabled: true
         blurMax: 60
-        blur: 1
+        blur: Settings.data.dashboard.mediaBlur.strength
       }
     }
 
@@ -153,9 +185,13 @@ NBox {
     spacing: Style.marginS
 
     // === Header: title + player selector ===
+    // Deliberately not fillWidth: the dashboard grid stretches this card wider
+    // than its content column, so a filling row would pin the icon and pill to
+    // the far left while the artwork below stays centred. Sizing the row to its
+    // implicit width and centring it keeps the header on the artwork's axis.
     RowLayout {
       id: headerRow
-      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignHCenter
       spacing: Style.marginM
 
       NIcon {
@@ -270,7 +306,10 @@ NBox {
     Item {
       id: mediaBody
       Layout.fillWidth: true
-      Layout.preferredHeight: mediaStack.implicitHeight + Style.margin2M
+      // Fills whatever height the surrounding layout gives the card, so the
+      // artwork below can shrink to fit instead of overflowing its cell.
+      Layout.fillHeight: true
+      Layout.minimumHeight: Math.round(120 * Style.uiScaleRatio)
 
       // Visualizer background for content area
       Loader {
@@ -283,21 +322,49 @@ NBox {
       ColumnLayout {
         id: mediaStack
         anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Style.marginM
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.min(parent.width, root.cardContentWidth)
         spacing: Style.marginM
 
+        // A ColumnLayout packs its children against the top, so with a fixed
+        // album art size (or artwork hidden) the block would hang high in a tall
+        // card. These two stretchy spacers split the leftover height evenly, so
+        // the whole stack sits on the card's vertical centre. They collapse to
+        // zero when the artwork is in fill mode and already eats the slack.
+        Item {
+          Layout.fillHeight: true
+        }
+
+        // Gaps `spacing` inserts between this column's children: the two spacers
+        // plus artwork, metadata, seek block and transport row are six children,
+        // so five gaps. The artwork budget below reserves all of them - counting
+        // only the visible ones would overflow the stack by a gap or two and the
+        // card's clip would cut the transport row off. Over-reserving only ever
+        // leaves a gap's worth of slack for the spacers to swallow.
+        readonly property int spacingCount: 5
+
         // Album art
         Item {
           id: albumArtItem
-          readonly property real compactArtSize: Math.round(Math.min(root.panelAlbumArtSize, root.maxArtSize) * Style.uiScaleRatio)
+          // Fill mode drops the setting's cap entirely and lets the height
+          // budget below be the only limit. A size above the card's column
+          // width is clamped too, otherwise the square would spill sideways
+          // into the neighbouring cell.
+          readonly property real requestedArtSize: root.panelAlbumArtSize === 0 ? Number.POSITIVE_INFINITY : Math.round(Math.min(root.panelAlbumArtSize, root.albumArtSizeMax) * Style.uiScaleRatio)
+          // Artwork is square, so it takes whatever vertical room the controls
+          // leave behind, capped at the configured size. Height comes from
+          // mediaBody (a layout-driven size) while the controls' implicit height
+          // depends only on width, so this cannot form a binding loop.
+          readonly property real artSize: Math.round(Math.max(0, Math.min(requestedArtSize, root.cardContentWidth, mediaStack.height - mediaControls.implicitHeight - progressColumn.implicitHeight - playbackControls.implicitHeight - mediaStack.spacing * mediaStack.spacingCount)))
 
-          Layout.preferredWidth: compactArtSize
-          Layout.preferredHeight: compactArtSize
-          Layout.minimumWidth: compactArtSize
-          Layout.maximumWidth: compactArtSize
-          Layout.minimumHeight: compactArtSize
-          Layout.maximumHeight: compactArtSize
+          Layout.preferredWidth: artSize
+          Layout.preferredHeight: artSize
+          Layout.minimumWidth: artSize
+          Layout.maximumWidth: artSize
+          Layout.minimumHeight: artSize
+          Layout.maximumHeight: artSize
           Layout.alignment: Qt.AlignHCenter
           visible: root.showAlbumArt
 
@@ -308,7 +375,10 @@ NBox {
             imageFillMode: Image.PreserveAspectCrop
             fallbackIcon: "disc"
             fallbackIconSize: Style.fontSizeXXXL * 3
-            borderWidth: 0
+            // The frame is drawn inside the artwork's bounds, so it eats into
+            // the image rather than growing the square past its layout size.
+            borderWidth: root.albumArtFrameWidth
+            borderColor: root.albumArtFrameColor
           }
 
           Loader {
@@ -321,11 +391,16 @@ NBox {
         }
 
         ColumnLayout {
+          id: mediaControls
           Layout.fillWidth: true
           spacing: 0
 
           NScrollText {
+            id: trackTitle
             Layout.fillWidth: true
+            // The two blocks swap roles when "artist first" is on, so visibility
+            // follows the role (title/artist) rather than the slot.
+            visible: root.showArtistFirst ? root.showArtist : root.showTrackTitle
             maxWidth: parent.width
             text: {
               if (root.showArtistFirst) {
@@ -349,14 +424,30 @@ NBox {
               pointSize: Style.fontSizeL
               font.weight: Style.fontWeightBold
               color: Color.mOnSurface
-              horizontalAlignment: Text.AlignLeft
+              horizontalAlignment: Text.AlignHCenter
+              // Centre the text by matching the scroller's width; the loaded item
+              // is otherwise content-sized, which makes horizontalAlignment a
+              // no-op. Once the text outgrows that width, fall back to content
+              // width so the marquee still scrolls instead of clipping evenly at
+              // both edges.
+              //
+              // Compare against this NText's own implicitWidth, NOT
+              // trackTitle.contentWidth: contentWidth falls back to the delegate's
+              // width when implicitWidth is 0, so testing against it closes a loop
+              // (contentWidth -> item.width -> this width -> contentWidth) and Qt
+              // reports "Binding loop detected". implicitWidth is purely
+              // content-derived and is what contentWidth returns when non-zero, so
+              // behaviour is unchanged.
+              width: implicitWidth <= trackTitle.maxWidth ? trackTitle.width : implicitWidth
               elide: Text.ElideNone
               wrapMode: Text.NoWrap
             }
           }
 
           NScrollText {
+            id: trackSubtitle
             Layout.fillWidth: true
+            visible: root.showArtistFirst ? root.showTrackTitle : root.showArtist
             maxWidth: parent.width
             text: {
               if (root.showArtistFirst) {
@@ -379,7 +470,14 @@ NBox {
             delegate: NText {
               pointSize: Style.fontSizeS
               color: Color.mOnSurfaceVariant
-              horizontalAlignment: Text.AlignLeft
+              // Same treatment as the title line above: match the scroller's
+              // width so the text centres on the card, and only fall back to the
+              // content width once the text outgrows it so the marquee scrolls
+              // instead of clipping evenly at both edges. Tested against this
+              // item's own implicitWidth, never trackSubtitle.contentWidth,
+              // which would close a binding loop.
+              width: implicitWidth <= trackSubtitle.maxWidth ? trackSubtitle.width : implicitWidth
+              horizontalAlignment: Text.AlignHCenter
               elide: Text.ElideNone
               wrapMode: Text.NoWrap
             }
@@ -391,6 +489,8 @@ NBox {
           visible: (MediaService.currentPlayer && MediaService.trackLength > 0)
           Layout.fillWidth: true
           Layout.preferredHeight: progressColumn.implicitHeight
+          Layout.leftMargin: root.controlSideMargin
+          Layout.rightMargin: root.controlSideMargin
 
           property real localSeekRatio: -1
           property real lastSentSeekRatio: -1
@@ -491,8 +591,11 @@ NBox {
         }
 
         RowLayout {
+          id: playbackControls
           spacing: Style.marginL
           Layout.alignment: Qt.AlignHCenter
+          Layout.leftMargin: root.controlSideMargin
+          Layout.rightMargin: root.controlSideMargin
 
           NIconButton {
             icon: "media-prev"
@@ -526,6 +629,10 @@ NBox {
             baseSize: Style.baseWidgetSize * 0.9
             onClicked: MediaService.next()
           }
+        }
+
+        Item {
+          Layout.fillHeight: true
         }
       }
     }

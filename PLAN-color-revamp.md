@@ -221,7 +221,7 @@ UI updates (animated)
 | 6 | `Modules/.../ColorSchemeTab.qml` | Add Saturation sub-tab |
 | 7 | `Assets/settings-default.json` | Add default saturation values |
 | 8 | `Services/Theming/ColorSchemeService.qml` | Wire saturation into scheme loading |
-| 9 | Test: `qs -c ~/.config/quickshell/agnocturnal-shell/` | Verify no regressions |
+| 9 | Test: `qs -c ~/.config/quickshell/mordial-shell/` | Verify no regressions |
 
 ---
 

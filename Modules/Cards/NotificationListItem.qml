@@ -5,6 +5,13 @@
 // dashboard's notification card (Modules/Cards/NotificationCard.qml) so both
 // render identical rows.
 //
+// The card itself (fill, border, radius, shadow) is a copy of the one in the
+// standalone notification window (Modules/Notification/Notification.qml), so a
+// row looks like the notification that just arrived. That card is inset by
+// `shadowPadding` inside this row; owners stacking rows must therefore use
+// `-2 * Style.cardShadowPadding + Style.marginM` as their column spacing to
+// land on the popup's marginM gap between visible cards.
+//
 // Functions:
 //   parseActions(actions) - Safely JSON-parse a notification's action array
 //   linkAtPoint(x, y)     - Resolve a click point to an inline action link
@@ -61,7 +68,7 @@ Item {
     }
   }
   visible: root.inCurrentRange
-  height: visible && !isRemoving ? contentColumn.height + Style.margin2M : 0
+  height: visible && !isRemoving ? contentColumn.height + Style.margin2M + root.shadowPadding * 2 : 0
 
   property bool canExpand: summaryText.truncated || bodyText.truncated
   property real swipeOffset: 0
@@ -77,6 +84,15 @@ Item {
   readonly property real actionButtonSize: Style.baseWidgetSize * 0.7
   readonly property real buttonClusterWidth: root.actionButtonSize * 2 + Style.marginXS
   readonly property real iconSize: Math.round(40 * Style.uiScaleRatio)
+
+  // === Card chrome, kept identical to the standalone notification window ===
+  // The card is inset by the shadow padding inside this row, so list owners must
+  // offset it back out with negative column spacing to keep a marginM gap between
+  // the visible cards (see Modules/Notification/Notification.qml).
+  readonly property int shadowPadding: Style.cardShadowPadding
+  // Same fill/border alpha the popup card and toasts use, so a row reads as the
+  // notification the user already sees over the desktop.
+  readonly property real backgroundAlpha: Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0
 
   function isSafeLink(link) {
     if (!link)
@@ -184,15 +200,15 @@ Item {
   readonly property bool isFocused: root.listIndex === root.focusIndex
 
   Rectangle {
+    id: cardBackground
     anchors.fill: parent
-    radius: Style.radiusM
-    color: Color.mSurfaceVariant
+    anchors.margins: root.shadowPadding
+    radius: Style.radiusL
+    color: Qt.alpha(Color.mSurfaceContainer, root.backgroundAlpha)
     border.color: {
       if (root.isFocused)
         return Color.mPrimary;
-      if (Settings.data.ui.boxBorderEnabled)
-        return Qt.alpha(Color.mOutline, Style.opacityHeavy);
-      return "transparent";
+      return Qt.alpha(Color.mOutline, root.backgroundAlpha);
     }
     border.width: root.isFocused ? Style.borderM : Style.borderS
 
@@ -204,93 +220,99 @@ Item {
     }
   }
 
+  NDropShadow {
+    anchors.fill: cardBackground
+    source: cardBackground
+    autoPaddingEnabled: true
+  }
+
   // Click to expand/collapse
   MouseArea {
     id: historyInteractionArea
-    anchors.fill: parent
+    anchors.fill: cardBackground
     anchors.rightMargin: root.buttonClusterWidth + Style.marginM
     enabled: !root.isRemoving
     hoverEnabled: true
     cursorShape: Qt.ArrowCursor
     onPressed: mouse => {
-      root.requestFocus(root.listIndex);
-      root.requestClearAction();
+                 root.requestFocus(root.listIndex);
+                 root.requestClearAction();
 
-      if (root.isExpanded) {
-        const link = root.linkAtPoint(mouse.x, mouse.y);
-        if (link) {
-          root.pendingLink = link;
-        } else {
-          root.pendingLink = "";
-        }
-      }
+                 if (root.isExpanded) {
+                   const link = root.linkAtPoint(mouse.x, mouse.y);
+                   if (link) {
+                     root.pendingLink = link;
+                   } else {
+                     root.pendingLink = "";
+                   }
+                 }
 
-      if (mouse.button !== Qt.LeftButton)
-        return;
-      const globalPoint = historyInteractionArea.mapToGlobal(mouse.x, mouse.y);
-      root.pressGlobalX = globalPoint.x;
-      root.pressGlobalY = globalPoint.y;
-      root.isSwiping = false;
-    }
+                 if (mouse.button !== Qt.LeftButton)
+                 return;
+                 const globalPoint = historyInteractionArea.mapToGlobal(mouse.x, mouse.y);
+                 root.pressGlobalX = globalPoint.x;
+                 root.pressGlobalY = globalPoint.y;
+                 root.isSwiping = false;
+               }
     onPositionChanged: mouse => {
-      if (!(mouse.buttons & Qt.LeftButton) || root.isRemoving)
-        return;
+                         if (!(mouse.buttons & Qt.LeftButton) || root.isRemoving)
+                         return;
 
-      const globalPoint = historyInteractionArea.mapToGlobal(mouse.x, mouse.y);
-      const deltaX = globalPoint.x - root.pressGlobalX;
-      const deltaY = globalPoint.y - root.pressGlobalY;
+                         const globalPoint = historyInteractionArea.mapToGlobal(mouse.x, mouse.y);
+                         const deltaX = globalPoint.x - root.pressGlobalX;
+                         const deltaY = globalPoint.y - root.pressGlobalY;
 
-      if (!root.isSwiping) {
-        if (Math.abs(deltaX) < root.swipeStartThreshold)
-          return;
+                         if (!root.isSwiping) {
+                           if (Math.abs(deltaX) < root.swipeStartThreshold)
+                           return;
 
-        // Only start a swipe-dismiss when horizontal movement is dominant.
-        if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.15) {
-          return;
-        }
-        root.isSwiping = true;
-      }
+                           // Only start a swipe-dismiss when horizontal movement is dominant.
+                           if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.15) {
+                             return;
+                           }
+                           root.isSwiping = true;
+                         }
 
-      if (root.pendingLink && Math.abs(deltaX) >= root.swipeStartThreshold) {
-        root.pendingLink = "";
-      }
+                         if (root.pendingLink && Math.abs(deltaX) >= root.swipeStartThreshold) {
+                           root.pendingLink = "";
+                         }
 
-      root.swipeOffset = deltaX;
-    }
+                         root.swipeOffset = deltaX;
+                       }
     onReleased: mouse => {
-      if (mouse.button !== Qt.LeftButton)
-        return;
+                  if (mouse.button !== Qt.LeftButton)
+                  return;
 
-      if (root.isSwiping) {
-        if (Math.abs(root.swipeOffset) >= root.swipeDismissThreshold) {
-          root.dismissBySwipe();
-        } else {
-          root.swipeOffset = 0;
-        }
-        root.isSwiping = false;
-        root.pendingLink = "";
-        return;
-      }
+                  if (root.isSwiping) {
+                    if (Math.abs(root.swipeOffset) >= root.swipeDismissThreshold) {
+                      root.dismissBySwipe();
+                    } else {
+                      root.swipeOffset = 0;
+                    }
+                    root.isSwiping = false;
+                    root.pendingLink = "";
+                    return;
+                  }
 
-      if (root.pendingLink) {
-        Qt.openUrlExternally(root.pendingLink);
-        root.pendingLink = "";
-        return;
-      }
+                  if (root.pendingLink) {
+                    Qt.openUrlExternally(root.pendingLink);
+                    root.pendingLink = "";
+                    return;
+                  }
 
-      // Without a default action, or if invoking it fails,
-      // fall back to focusing the sender window by app identity.
-      var actions = root.actionsList;
-      var hasDefault = actions.some(function (a) {
-        return a.identifier === "default";
-      });
-      if (hasDefault && NotificationService.invokeAction(root.notificationId, "default")) {
-        root.actionInvoked();
-      } else {
-        NotificationService.focusSenderWindow(root.appName);
-        root.actionInvoked();
-      }
-    }
+                  // Without a default action, or if invoking it fails,
+                  // fall back to focusing the sender window by app identity.
+                  var actions = root.actionsList;
+                  var hasDefault = actions.some(function (a) {
+                    return a.identifier === "default";
+                  });
+                  if (hasDefault && NotificationService.invokeAction(root.notificationId, "default")) {
+                    root.actionInvoked();
+                  } else {
+                    NotificationService.focusSenderWindow(root.appName);
+                    root.actionInvoked();
+                  }
+                }
     onCanceled: {
       root.isSwiping = false;
       root.swipeOffset = 0;
@@ -326,7 +348,8 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: Style.marginM
+    // The extra shadowPadding lines the content up with the inset card.
+    anchors.margins: Style.marginM + root.shadowPadding
     spacing: Style.marginM
 
     Row {

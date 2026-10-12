@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.Keyboard
+import qs.Services.Mordial
 
 Item {
   id: root
@@ -263,8 +263,8 @@ Item {
         if (Settings.data.appLauncher.autoPasteClipboard) {
           launcher.closeImmediately();
           Qt.callLater(() => {
-            ClipboardService.pasteFromClipboard(item.id, item.mime);
-          });
+                         ClipboardService.pasteFromClipboard(item.id, item.mime);
+                       });
         } else {
           ClipboardService.copyToClipboard(item.id);
           launcher.close();

@@ -123,12 +123,12 @@ ColumnLayout {
       }
       checked: (Settings.data.osd.monitors || []).indexOf(modelData.name) !== -1
       onToggled: checked => {
-        if (checked) {
-          Settings.data.osd.monitors = root.addMonitor(Settings.data.osd.monitors, modelData.name);
-        } else {
-          Settings.data.osd.monitors = root.removeMonitor(Settings.data.osd.monitors, modelData.name);
-        }
-      }
+                   if (checked) {
+                     Settings.data.osd.monitors = root.addMonitor(Settings.data.osd.monitors, modelData.name);
+                   } else {
+                     Settings.data.osd.monitors = root.removeMonitor(Settings.data.osd.monitors, modelData.name);
+                   }
+                 }
     }
   }
 }

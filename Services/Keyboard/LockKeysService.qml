@@ -48,7 +48,10 @@ Singleton {
         if (trimmed.length > 0 && trimmed.includes("::")) {
           var kind = trimmed.split("::")[1];
           if (kind === "numlock" || kind === "capslock" || kind === "scrolllock") {
-            ledModel.append({"dirName": trimmed, "filePath": "/sys/class/leds/" + trimmed});
+            ledModel.append({
+                              "dirName": trimmed,
+                              "filePath": "/sys/class/leds/" + trimmed
+                            });
           }
         }
       }

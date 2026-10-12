@@ -128,17 +128,17 @@ Item {
     ]
 
     onTriggered: action => {
-      contextMenu.close();
-      PanelService.closeContextMenu(screen);
+                   contextMenu.close();
+                   PanelService.closeContextMenu(screen);
 
-      if (action === "toggle-mute") {
-        AudioService.setOutputMuted(!AudioService.muted);
-      } else if (action === "custom-command") {
-        Quickshell.execDetached(["sh", "-c", middleClickCommand]);
-      } else if (action === "widget-settings") {
-        BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-      }
-    }
+                   if (action === "toggle-mute") {
+                     AudioService.setOutputMuted(!AudioService.muted);
+                   } else if (action === "custom-command") {
+                     Quickshell.execDetached(["sh", "-c", middleClickCommand]);
+                   } else if (action === "widget-settings") {
+                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
+                   }
+                 }
   }
 
   BarPill {

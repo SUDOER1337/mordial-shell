@@ -74,9 +74,9 @@ ColumnLayout {
   NColorChoice {
     currentKey: valueClockColor
     onSelected: key => {
-      valueClockColor = key;
-      saveSettings();
-    }
+                  valueClockColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.clockColor
   }
 
@@ -86,9 +86,9 @@ ColumnLayout {
     description: "Override the default font selection with a custom font for the clock."
     checked: valueUseCustomFont
     onToggled: checked => {
-      valueUseCustomFont = checked;
-      saveSettings();
-    }
+                 valueUseCustomFont = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.useCustomFont
   }
 

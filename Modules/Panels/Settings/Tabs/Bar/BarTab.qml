@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.UI
 import qs.Widgets
 
@@ -130,23 +129,12 @@ ColumnLayout {
     availableWidgets.clear();
     const widgets = BarWidgetRegistry.getAvailableWidgets();
     widgets.forEach(entry => {
-      const isPlugin = BarWidgetRegistry.isPluginWidget(entry);
-      let displayName = entry;
-      if (isPlugin) {
-        const pluginId = entry.replace("plugin:", "");
-        const manifest = PluginRegistry.getPluginManifest(pluginId);
-        if (manifest && manifest.name) {
-          displayName = manifest.name;
-        } else {
-          displayName = pluginId;
-        }
-      }
-      availableWidgets.append({
-                                "key": entry,
-                                "name": displayName,
-                                "badges": createBadges(isPlugin, getWidgetLocations(entry))
-                              });
-    });
+                      availableWidgets.append({
+                                                "key": entry,
+                                                "name": entry,
+                                                "badges": createBadges(false, getWidgetLocations(entry))
+                                              });
+                    });
   }
 
   ListModel {
@@ -160,13 +148,6 @@ ColumnLayout {
   Connections {
     target: BarService
     function onActiveWidgetsChanged() {
-      updateAvailableWidgetsModel();
-    }
-  }
-
-  Connections {
-    target: BarWidgetRegistry
-    function onPluginWidgetRegistryUpdated() {
       updateAvailableWidgetsModel();
     }
   }
@@ -217,18 +198,11 @@ ColumnLayout {
       reorderWidgetInSection: root._reorderWidgetInSection
       updateWidgetSettingsInSection: root._updateWidgetSettingsInSection
       moveWidgetBetweenSections: root._moveWidgetBetweenSections
-      onOpenPluginSettings: manifest => pluginSettingsDialog.openPluginSettings(manifest)
     }
     BehaviorSubTab {}
     MonitorsSubTab {
       addMonitor: root.addMonitor
       removeMonitor: root.removeMonitor
     }
-  }
-
-  NPluginSettingsPopup {
-    id: pluginSettingsDialog
-    parent: Overlay.overlay
-    showToastOnSave: false
   }
 }

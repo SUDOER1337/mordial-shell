@@ -203,6 +203,28 @@
     "subTab": 0
   },
   {
+    "labelKey": "Outline opacity",
+    "descriptionKey": null,
+    "widget": "NValueSlider",
+    "tab": 4,
+    "tabLabel": "panels.bar.title",
+    "subTab": 0,
+    "visibleWhen": [
+      "Settings.data.bar.showOutline"
+    ]
+  },
+  {
+    "labelKey": "Outline color",
+    "descriptionKey": null,
+    "widget": "NColorChoice",
+    "tab": 4,
+    "tabLabel": "panels.bar.title",
+    "subTab": 0,
+    "visibleWhen": [
+      "Settings.data.bar.showOutline"
+    ]
+  },
+  {
     "labelKey": "Show capsule",
     "descriptionKey": null,
     "widget": "NToggle",
@@ -792,6 +814,60 @@
     "subTab": 0
   },
   {
+    "labelKey": "Panel width",
+    "descriptionKey": null,
+    "widget": "NValueSlider",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 0
+  },
+  {
+    "labelKey": "Panel height",
+    "descriptionKey": null,
+    "widget": "NValueSlider",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 0
+  },
+  {
+    "labelKey": "Media background blur",
+    "descriptionKey": null,
+    "widget": "NToggle",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 3
+  },
+  {
+    "labelKey": "Media background blur strength",
+    "descriptionKey": null,
+    "widget": "NValueSlider",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 3,
+    "visibleWhen": [
+      "Settings.data.dashboard.mediaBlur.enabled"
+    ]
+  },
+  {
+    "labelKey": "Album art frame width",
+    "descriptionKey": null,
+    "widget": "NValueSlider",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 3
+  },
+  {
+    "labelKey": "Album art frame color",
+    "descriptionKey": null,
+    "widget": "NLabel",
+    "tab": 7,
+    "tabLabel": "panels.dashboard.title",
+    "subTab": 3,
+    "visibleWhen": [
+      "Settings.data.dashboard.mediaCard.frameWidth > 0"
+    ]
+  },
+  {
     "labelKey": "Enable desktop widgets",
     "descriptionKey": null,
     "widget": "NToggle",
@@ -1181,7 +1257,7 @@
     "labelKey": "Enable hooks",
     "descriptionKey": null,
     "widget": "NToggle",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 0
   },
@@ -1189,15 +1265,15 @@
     "labelKey": "Available parameters",
     "descriptionKey": null,
     "widget": "NLabel",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 0
   },
   {
-    "labelKey": "Noctalia started",
+    "labelKey": "Mordial started",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1205,7 +1281,7 @@
     "labelKey": "Wallpaper changed",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1213,7 +1289,7 @@
     "labelKey": "Colors generated",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1221,7 +1297,7 @@
     "labelKey": "Theme changed",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1229,7 +1305,7 @@
     "labelKey": "Screen locked",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1237,7 +1313,7 @@
     "labelKey": "Screen unlocked",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1245,7 +1321,7 @@
     "labelKey": "Session end",
     "descriptionKey": null,
     "widget": "HookRow",
-    "tab": 20,
+    "tab": 19,
     "tabLabel": "panels.hooks.title",
     "subTab": 1
   },
@@ -1850,54 +1926,6 @@
     "tab": 10,
     "tabLabel": "panels.osd.title",
     "subTab": 0
-  },
-  {
-    "labelKey": "No plugins available",
-    "descriptionKey": null,
-    "widget": "NLabel",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 1
-  },
-  {
-    "labelKey": "Auto-update plugins",
-    "descriptionKey": null,
-    "widget": "NToggle",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 0
-  },
-  {
-    "labelKey": "Plugin update notifications",
-    "descriptionKey": null,
-    "widget": "NToggle",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 0
-  },
-  {
-    "labelKey": "No plugins installed",
-    "descriptionKey": null,
-    "widget": "NLabel",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 0
-  },
-  {
-    "labelKey": "Repository name",
-    "descriptionKey": null,
-    "widget": "NTextInput",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 2
-  },
-  {
-    "labelKey": "Repository URL",
-    "descriptionKey": null,
-    "widget": "NTextInput",
-    "tab": 19,
-    "tabLabel": "panels.plugins.title",
-    "subTab": 2
   },
   {
     "labelKey": "Use analog style clock",

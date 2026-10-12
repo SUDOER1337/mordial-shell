@@ -29,9 +29,9 @@ ColumnLayout {
     description: "Show the background container for the weather widget."
     checked: valueShowBackground
     onToggled: checked => {
-      valueShowBackground = checked;
-      saveSettings();
-    }
+                 valueShowBackground = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showBackground
   }
 
@@ -42,9 +42,9 @@ ColumnLayout {
     description: "Use rounded corners for the widget background."
     checked: valueRoundedCorners
     onToggled: checked => {
-      valueRoundedCorners = checked;
-      saveSettings();
-    }
+                 valueRoundedCorners = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.roundedCorners
   }
 }

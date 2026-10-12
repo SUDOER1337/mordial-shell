@@ -233,11 +233,11 @@ Singleton {
 
     // Initialize cache file path
     Qt.callLater(() => {
-      if (typeof Settings !== 'undefined' && Settings.cacheDir) {
-        wallpaperCacheFile = Settings.cacheDir + "wallpapers.json";
-        wallpaperCacheView.path = wallpaperCacheFile;
-      }
-    });
+                   if (typeof Settings !== 'undefined' && Settings.cacheDir) {
+                     wallpaperCacheFile = Settings.cacheDir + "wallpapers.json";
+                     wallpaperCacheView.path = wallpaperCacheFile;
+                   }
+                 });
 
     // Note: isInitialized will be set to true in wallpaperCacheView.onLoaded
     Logger.d("Wallpaper", "Triggering initial wallpaper scan");
@@ -1662,13 +1662,13 @@ Singleton {
         root._syncWallpaperSlotsWhenLinking();
       }
 
-      // Load default wallpaper from cache if it exists, otherwise use Noctalia default
+      // Load default wallpaper from cache if it exists, otherwise use Mordial default
       if (wallpaperCacheAdapter.defaultWallpaper && wallpaperCacheAdapter.defaultWallpaper !== "") {
         root.defaultWallpaper = wallpaperCacheAdapter.defaultWallpaper;
         Logger.d("Wallpaper", "Loaded default wallpaper from cache:", wallpaperCacheAdapter.defaultWallpaper);
       } else {
         root.defaultWallpaper = root.noctaliaDefaultWallpaper;
-        Logger.d("Wallpaper", "Using Noctalia default wallpaper");
+        Logger.d("Wallpaper", "Using Mordial default wallpaper");
       }
 
       Logger.d("Wallpaper", "Loaded wallpapers from cache file:", Object.keys(root.currentWallpapers).length, "screens");

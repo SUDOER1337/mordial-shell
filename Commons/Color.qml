@@ -596,7 +596,7 @@ Singleton {
   *  @returns Adjusted opacity */
   function adaptiveOpacity(baseOpacity) // Dark/light-aware opacity
   {
-    if (PowerProfileService.noctaliaPerformanceMode)
+    if (PowerProfileService.profile === PowerProfile.Performance)
       return 1.0;
     return Settings.data.colorSchemes.darkMode ? baseOpacity : Math.pow(baseOpacity, 1.5);
   }
@@ -609,7 +609,7 @@ Singleton {
   *  @returns Adjusted color */
   function smartAlpha(baseColor, minAlpha = 0.4) // Apply translucency-aware alpha
   {
-    if (PowerProfileService.noctaliaPerformanceMode)
+    if (PowerProfileService.profile === PowerProfile.Performance)
       return baseColor;
 
     if (!Settings.data.ui.translucentWidgets)
@@ -646,10 +646,10 @@ Singleton {
     }
   ]
 
-  // === Default Colors: Agnoctural (default) Dark ===
+  // === Default Colors: Mordial (default) Dark ===
   /** Fallback palette used when no colors.json exists yet.
   *  All 30 tokens initialized here so the shell has a valid visual state
-  *  before any scheme is loaded. Matches the "Agnoctural (default)" scheme. */
+  *  before any scheme is loaded. Matches the "Mordial (default)" scheme. */
   QtObject {
     id: defaultColors
 

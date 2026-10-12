@@ -511,8 +511,8 @@ Singleton {
         // Restart if it died unexpectedly while we still need it
         Logger.w("SystemStat", "Disk shell exited unexpectedly, restarting");
         Qt.callLater(() => {
-          dfShell.running = true;
-        });
+                       dfShell.running = true;
+                     });
       }
     }
 
@@ -638,18 +638,18 @@ Singleton {
       } else {
         currentIndex++;
         Qt.callLater(() => {
-          // Qt.callLater is mandatory
-          checkNext();
-        });
+                       // Qt.callLater is mandatory
+                       checkNext();
+                     });
       }
     }
 
     onLoadFailed: function (error) {
       currentIndex++;
       Qt.callLater(() => {
-        // Qt.callLater is mandatory
-        checkNext();
-      });
+                     // Qt.callLater is mandatory
+                     checkNext();
+                   });
     }
   }
 
@@ -667,9 +667,9 @@ Singleton {
         //console.log(temp, cpuTempReader.path)
         root.intelTempValues.push(temp);
         Qt.callLater(() => {
-          // Qt.callLater is mandatory
-          checkNextIntelTemp();
-        });
+                       // Qt.callLater is mandatory
+                       checkNextIntelTemp();
+                     });
       } else {
         // For AMD sensors (k10temp and zenpower), directly set the temperature
         root.cpuTemp = Math.round(parseInt(data) / 1000.0);
@@ -678,9 +678,9 @@ Singleton {
     }
     onLoadFailed: function (error) {
       Qt.callLater(() => {
-        // Qt.callLater is mandatory
-        checkNextIntelTemp();
-      });
+                     // Qt.callLater is mandatory
+                     checkNextIntelTemp();
+                   });
     }
   }
 
@@ -736,15 +736,15 @@ Singleton {
       }
       currentIndex++;
       Qt.callLater(() => {
-        checkNext();
-      });
+                     checkNext();
+                   });
     }
 
     onLoadFailed: function (error) {
       currentIndex++;
       Qt.callLater(() => {
-        checkNext();
-      });
+                     checkNext();
+                   });
     }
 
     function finishScan() {
@@ -788,15 +788,15 @@ Singleton {
       collectedTemps.push(temp);
       currentZoneIndex++;
       Qt.callLater(() => {
-        readNextCpuThermalZone();
-      });
+                     readNextCpuThermalZone();
+                   });
     }
 
     onLoadFailed: function (error) {
       currentZoneIndex++;
       Qt.callLater(() => {
-        readNextCpuThermalZone();
-      });
+                     readNextCpuThermalZone();
+                   });
     }
   }
 
@@ -831,8 +831,8 @@ Singleton {
         currentZoneIndex++;
         if (currentZoneIndex < root.gpuThermalZonePaths.length) {
           Qt.callLater(() => {
-            readNextGpuThermalZone();
-          });
+                         readNextGpuThermalZone();
+                       });
           return;
         }
         // All zones read, take max
@@ -901,15 +901,15 @@ Singleton {
       // Continue scanning regardless of whether we found a match
       currentIndex++;
       Qt.callLater(() => {
-        checkNext();
-      });
+                     checkNext();
+                   });
     }
 
     onLoadFailed: function (error) {
       currentIndex++;
       Qt.callLater(() => {
-        checkNext();
-      });
+                     checkNext();
+                   });
     }
   }
 
@@ -966,8 +966,8 @@ Singleton {
       }
       root.gpuVramCheckIndex++;
       Qt.callLater(() => {
-        checkNextGpuVram();
-      });
+                     checkNextGpuVram();
+                   });
     }
 
     onLoadFailed: function (error) {
@@ -975,8 +975,8 @@ Singleton {
       // hasDedicatedVram is already false by default
       root.gpuVramCheckIndex++;
       Qt.callLater(() => {
-        checkNextGpuVram();
-      });
+                     checkNextGpuVram();
+                   });
     }
   }
 

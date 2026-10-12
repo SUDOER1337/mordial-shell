@@ -6,6 +6,8 @@
     "monitors": [],
     "density": "default",
     "showOutline": false,
+    "outlineOpacity": 0.1,
+    "outlineColorKey": "primary",
     "showCapsule": true,
     "capsuleOpacity": 1,
     "capsuleColorKey": "none",
@@ -119,28 +121,13 @@
     "lockScreenBlur": 0,
     "lockScreenTint": 0,
     "keybinds": {
-      "keyUp": [
-        "Up"
-      ],
-      "keyDown": [
-        "Down"
-      ],
-      "keyLeft": [
-        "Left"
-      ],
-      "keyRight": [
-        "Right"
-      ],
-      "keyEnter": [
-        "Return",
-        "Enter"
-      ],
-      "keyEscape": [
-        "Esc"
-      ],
-      "keyRemove": [
-        "Del"
-      ]
+      "keyUp": ["Up"],
+      "keyDown": ["Down"],
+      "keyLeft": ["Left"],
+      "keyRight": ["Right"],
+      "keyEnter": ["Return", "Enter"],
+      "keyEscape": ["Esc"],
+      "keyRemove": ["Del"]
     },
     "reverseScroll": false,
     "smoothScrollEnabled": true
@@ -219,7 +206,6 @@
     ],
     "skipStartupTransition": false,
     "transitionEdgeSmoothness": 0.05,
-    "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
     "useOriginalImages": false,
     "overviewBlur": 0.4,
@@ -267,7 +253,13 @@
   },
   "dashboard": {
     "position": "close_to_bar_button",
+    "panelWidth": 1400,
+    "panelHeight": 700,
     "diskPath": "/",
+    "mediaBlur": {
+      "enabled": true,
+      "strength": 1
+    },
     "shortcuts": {
       "left": [
         {
@@ -280,7 +272,7 @@
           "id": "WallpaperSelector"
         },
         {
-          "id": "AgnocturalPerformance"
+          "id": "MordialPerformance"
         }
       ],
       "right": [
@@ -323,7 +315,11 @@
         "enabled": true,
         "id": "media-sysmon-card"
       }
-    ]
+    ],
+    "mediaCard": {
+      "frameWidth": 0,
+      "frameColor": "#ffffff"
+    }
   },
   "systemMonitor": {
     "cpuWarningThreshold": 80,
@@ -472,11 +468,7 @@
     "autoHideMs": 2000,
     "overlayLayer": true,
     "backgroundOpacity": 1,
-    "enabledTypes": [
-      0,
-      1,
-      2
-    ],
+    "enabledTypes": [0, 1, 2],
     "monitors": []
   },
   "audio": {
@@ -498,7 +490,7 @@
   },
   "colorSchemes": {
     "useWallpaperColors": false,
-    "predefinedScheme": "Agnoctural (default)",
+    "predefinedScheme": "Mordial (default)",
     "darkMode": true,
     "schedulingMode": "off",
     "manualSunrise": "06:30",
@@ -539,10 +531,6 @@
     "session": "",
     "colorGeneration": ""
   },
-  "plugins": {
-    "autoUpdate": false,
-    "notifyUpdates": true
-  },
   "idle": {
     "enabled": false,
     "screenOffTimeout": 600,
@@ -563,6 +551,29 @@
     "gridSnap": false,
     "gridSnapScale": false,
     "monitorWidgets": []
+  },
+  "aiChat": {
+    "activeProvider": "ollama",
+    "maxHistoryLength": 100,
+    "ollama": {
+      "baseUrl": "http://localhost:11434",
+      "model": "",
+      "temperature": 0.7,
+      "systemPrompt": "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+    },
+    "lmstudio": {
+      "baseUrl": "http://localhost:1234/v1/chat/completions",
+      "model": "",
+      "temperature": 0.7,
+      "systemPrompt": "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+    },
+    "internetSearch": {
+      "enabled": false,
+      "provider": "duckduckgo",
+      "maxResults": 5,
+      "searxngUrl": "",
+      "searxngJsonMode": true,
+      "followUpRephrase": true
+    }
   }
 }
-AGNOCTURAL_EOF

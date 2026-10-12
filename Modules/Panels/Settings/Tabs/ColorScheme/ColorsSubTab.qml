@@ -26,10 +26,10 @@ ColumnLayout {
     var filename = pathParts[pathParts.length - 1];
     var schemeName = filename.replace(".json", "");
 
-    if (schemeName === "Agnoctural-default") {
-      schemeName = "Agnoctural (default)";
-    } else if (schemeName === "Agnoctural-legacy") {
-      schemeName = "Agnoctural (legacy)";
+    if (schemeName === "Mordial-default") {
+      schemeName = "Mordial (default)";
+    } else if (schemeName === "Mordial-legacy") {
+      schemeName = "Mordial (legacy)";
     } else if (schemeName === "Tokyo-Night") {
       schemeName = "Tokyo Night";
     } else if (schemeName === "Rosepine") {
@@ -138,9 +138,9 @@ ColumnLayout {
     description: "Switches to a darker theme for easier viewing at night."
     checked: Settings.data.colorSchemes.darkMode
     onToggled: checked => {
-      Settings.data.colorSchemes.darkMode = checked;
-      root.cacheVersion++;
-    }
+                 Settings.data.colorSchemes.darkMode = checked;
+                 root.cacheVersion++;
+               }
   }
 
   NToggle {
@@ -149,10 +149,10 @@ ColumnLayout {
     checked: Settings.data.colorSchemes.syncGsettings
     defaultValue: Settings.getDefaultValue("colorSchemes.syncGsettings")
     onToggled: checked => {
-      Settings.data.colorSchemes.syncGsettings = checked;
-      if (checked)
-        ColorSchemeService.pushSystemColorScheme();
-    }
+                 Settings.data.colorSchemes.syncGsettings = checked;
+                 if (checked)
+                 ColorSchemeService.pushSystemColorScheme();
+               }
   }
 
   NComboBox {
@@ -178,9 +178,9 @@ ColumnLayout {
     defaultValue: Settings.getDefaultValue("colorSchemes.schedulingMode")
 
     onSelected: key => {
-      Settings.data.colorSchemes.schedulingMode = key;
-      AppThemeService.generate();
-    }
+                  Settings.data.colorSchemes.schedulingMode = key;
+                  AppThemeService.generate();
+                }
   }
 
   ColumnLayout {
@@ -240,16 +240,16 @@ ColumnLayout {
     checked: Settings.data.colorSchemes.useWallpaperColors
     defaultValue: Settings.getDefaultValue("colorSchemes.useWallpaperColors")
     onToggled: checked => {
-      Settings.data.colorSchemes.useWallpaperColors = checked;
-      if (checked) {
-        AppThemeService.generate();
-      } else {
-        ToastService.showNotice("Wallpaper colors", "Wallpaper colors disabled", "settings-color-scheme");
-        if (Settings.data.colorSchemes.predefinedScheme) {
-          ColorSchemeService.applyScheme(Settings.data.colorSchemes.predefinedScheme);
-        }
-      }
-    }
+                 Settings.data.colorSchemes.useWallpaperColors = checked;
+                 if (checked) {
+                   AppThemeService.generate();
+                 } else {
+                   ToastService.showNotice("Wallpaper colors", "Wallpaper colors disabled", "settings-color-scheme");
+                   if (Settings.data.colorSchemes.predefinedScheme) {
+                     ColorSchemeService.applyScheme(Settings.data.colorSchemes.predefinedScheme);
+                   }
+                 }
+               }
   }
 
   NComboBox {
@@ -274,9 +274,9 @@ ColumnLayout {
     }
     currentKey: Settings.data.colorSchemes.monitorForColors || (screen ? screen.name : "")
     onSelected: key => {
-      Settings.data.colorSchemes.monitorForColors = key;
-      AppThemeService.generate();
-    }
+                  Settings.data.colorSchemes.monitorForColors = key;
+                  AppThemeService.generate();
+                }
   }
 
   NComboBox {
@@ -287,9 +287,9 @@ ColumnLayout {
     model: TemplateProcessor.schemeTypes
     currentKey: Settings.data.colorSchemes.generationMethod
     onSelected: key => {
-      Settings.data.colorSchemes.generationMethod = key;
-      AppThemeService.generate();
-    }
+                  Settings.data.colorSchemes.generationMethod = key;
+                  AppThemeService.generate();
+                }
   }
 
   NBox {

@@ -12,6 +12,9 @@
 //   closeImmediately()        - Skip animation and finalize close instantly
 //   setPosition()             - Recalculate panel x/y from anchor and content size
 //   onEscapePressed()         - Handle Escape key to close panel
+//   updatePanelHover()        - Report pointer presence to HoverPanelService
+//   findOpenPopup(item)       - Find an open popup in the loaded panel content
+//   isPopupLike(object)       - Structural popup check (instanceof is unreliable)
 //
 // Properties:
 //   screen                     - ShellScreen this panel is displayed on
@@ -21,6 +24,7 @@
 //   isPanelVisible             - Whether the panel is rendered (post-animation)
 //   blurEnabled                - Whether blur backdrop is active
 //   panelBackgroundColor       - Background color of the panel rectangle
+//   openPopup                  - Popup currently holding the panel open
 // =============================================================================
 
 import QtQuick
@@ -104,6 +108,10 @@ Item {
 
   // Whether blur should be applied behind this panel
   property bool blurEnabled: true
+
+  // The popup whose separate surface is currently keeping the panel open, if
+  // any. Tracked so its close can re-report pointer presence.
+  property var openPopup: null
 
   // Close with escape key
   property bool closeWithEscape: true
@@ -192,6 +200,13 @@ Item {
     // once the tooltip goes away.
     if (!inside && TooltipService.hasVisibleTooltip)
       return;
+    // Same reasoning for a dropdown the content opened. While it is up the
+    // pointer is over that popup's own surface, so the panel looks like it was
+    // left; closing now would rip the dropdown away mid-interaction, and for a
+    // hover-opened panel it would also close the choice being made.
+    root.openPopup = inside ? null : findOpenPopup(contentLoader.item);
+    if (root.openPopup)
+      return;
     HoverPanelService.setPanelHovered(inside);
   }
 
@@ -204,6 +219,53 @@ Item {
       if (!TooltipService.hasVisibleTooltip)
         root.updatePanelHover();
     }
+  }
+
+  // Same for the popup held above: once it closes, re-evaluate presence so the
+  // panel reports the pointer coming back with the dropdown, or closes if the
+  // pointer is still away.
+  Connections {
+    target: root.openPopup
+    ignoreUnknownSignals: true
+
+    function onClosed() {
+      root.updatePanelHover();
+    }
+  }
+
+  // Structural popup test. `instanceof Popup` is not usable here: it is false
+  // for popups Qt instantiates itself (ComboBox.popup, Menu.popup), which are
+  // exactly the ones a pointer is likely to be over. closePolicy and
+  // contentItem together are unique to Popup, and unlike instanceof they also
+  // read correctly on a QML-declared popup.
+  function isPopupLike(object) {
+    return !!object && object.closePolicy !== undefined && object.contentItem !== undefined;
+  }
+
+  // Depth-first search of the loaded content for an open popup; returns it or
+  // null. Walks `data` rather than `children` because a Popup is not an Item,
+  // so it never appears in the visual children list, and it stays in `data`
+  // even after reparenting itself to Overlay.overlay. `data` also reaches
+  // everything `children` does: Flickable content items and view delegates are
+  // in it too, so settings tabs (ScrollView > tab content) are covered.
+  function findOpenPopup(item) {
+    if (!item || !item.data)
+      return null;
+    const objects = item.data;
+    for (let i = 0; i < objects.length; i++) {
+      const child = objects[i];
+      if (!child)
+        continue;
+      // Controls (ComboBox, Menu, ...) keep their dropdown in `popup`; popups
+      // declared directly (icon picker, colour dialog, ...) are the child.
+      const candidate = child.popup ? child.popup : child;
+      if (isPopupLike(candidate) && candidate.visible)
+        return candidate;
+      const nested = findOpenPopup(child);
+      if (nested)
+        return nested;
+    }
+    return null;
   }
 
   function toggle(buttonItem, buttonName) {
@@ -340,6 +402,7 @@ Item {
     root.opacityFadeComplete = false;
     root.closeFinalized = true;
     root.isPanelOpen = false;
+    root.openPopup = null;
     panelBackground.dimensionsInitialized = false;
 
     // Signal immediate close so MainScreen can skip dimmer animation
@@ -371,6 +434,7 @@ Item {
     root.isPanelOpen = false;
     root.isClosing = false;
     root.opacityFadeComplete = false;
+    root.openPopup = null;
 
     // Reset dimensionsInitialized for next opening
     panelBackground.dimensionsInitialized = false;
@@ -1359,8 +1423,8 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         z: -1 // Behind content, but on the panel background
         onClicked: mouse => {
-          mouse.accepted = true; // Accept and ignore - prevents propagation to background
-        }
+                     mouse.accepted = true; // Accept and ignore - prevents propagation to background
+                   }
       }
 
       // Reports pointer presence over the panel's bare background. Interactive
@@ -1395,6 +1459,11 @@ Item {
       }
 
       onLoaded: {
+        // Freshly loaded content cannot have an open popup, and the previous
+        // one (if any) is gone with the old content. Drop it so a popup
+        // destroyed without emitting closed() cannot keep holding the panel.
+        root.openPopup = null;
+
         // Wait for contentPreferredWidth/Height to be available before making visible
         Qt.callLater(function () {
           // Calculate position with stable contentPreferredWidth/Height values

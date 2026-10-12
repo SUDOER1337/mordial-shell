@@ -87,25 +87,25 @@ ColumnLayout {
     currentKey: Settings.data.ui.settingsPanelMode
     defaultValue: Settings.getDefaultValue("ui.settingsPanelMode")
     onSelected: key => {
-      // Defer setup to next update so close can do its work properly
-      Qt.callLater(() => {
-        Settings.data.ui.settingsPanelMode = key;
-      });
-      if (Settings.data.ui.settingsPanelMode === "window" || key === "window") {
-        // Just switched from/to window, need to close panel
-        var screen = PanelService.openedPanel?.screen || SettingsPanelService.settingsWindow?.screen || PanelService.findScreenForPanels();
-        SettingsPanelService.close(screen);
+                  // Defer setup to next update so close can do its work properly
+                  Qt.callLater(() => {
+                                 Settings.data.ui.settingsPanelMode = key;
+                               });
+                  if (Settings.data.ui.settingsPanelMode === "window" || key === "window") {
+                    // Just switched from/to window, need to close panel
+                    var screen = PanelService.openedPanel?.screen || SettingsPanelService.settingsWindow?.screen || PanelService.findScreenForPanels();
+                    SettingsPanelService.close(screen);
 
-        Qt.callLater(() => {
-          SettingsPanelService.openToTab(SettingsPanel.Tab.UserInterface, 1, screen);
-        });
-      }
-    }
+                    Qt.callLater(() => {
+                                   SettingsPanelService.openToTab(SettingsPanel.Tab.UserInterface, 1, screen);
+                                 });
+                  }
+                }
   }
 
   NToggle {
     label: "Sidebar card style"
-    description: "Wraps the settings sidebar in a filled background with rounded corners."
+    description: "Wraps the settings and dashboard sidebars in a filled background with rounded corners."
     checked: Settings.data.ui.settingsPanelSideBarCardStyle
     defaultValue: Settings.getDefaultValue("ui.settingsPanelSideBarCardStyle")
     onToggled: checked => Settings.data.ui.settingsPanelSideBarCardStyle = checked

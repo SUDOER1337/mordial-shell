@@ -88,8 +88,8 @@ ColumnLayout {
     currentKey: Settings.data.bar.barType
     defaultValue: Settings.getDefaultValue("bar.barType")
     onSelected: key => {
-      Settings.data.bar.barType = key;
-    }
+                  Settings.data.bar.barType = key;
+                }
   }
 
   NComboBox {
@@ -187,6 +187,32 @@ ColumnLayout {
     checked: Settings.data.bar.showOutline
     defaultValue: Settings.getDefaultValue("bar.showOutline")
     onToggled: checked => Settings.data.bar.showOutline = checked
+  }
+
+  NValueSlider {
+    Layout.fillWidth: true
+    visible: Settings.data.bar.showOutline
+    label: "Outline opacity"
+    description: "Set the opacity of bar widget outlines."
+    from: 0
+    to: 1
+    stepSize: 0.01
+    showReset: true
+    value: Settings.data.bar.outlineOpacity
+    defaultValue: Settings.getDefaultValue("bar.outlineOpacity")
+    onMoved: value => Settings.data.bar.outlineOpacity = value
+    text: Math.floor(Settings.data.bar.outlineOpacity * 100) + "%"
+  }
+
+  NColorChoice {
+    Layout.fillWidth: true
+    visible: Settings.data.bar.showOutline
+    label: "Outline color"
+    description: "Choose a color for bar widget outlines."
+    noneColor: Color.mPrimary
+    noneOnColor: Color.mOnPrimary
+    currentKey: Settings.data.bar.outlineColorKey
+    onSelected: key => Settings.data.bar.outlineColorKey = key
   }
 
   NToggle {

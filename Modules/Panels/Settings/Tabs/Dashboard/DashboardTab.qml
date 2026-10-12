@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -11,6 +10,10 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: 0
+
+  // Set by SettingsContent when it loads this tab; forwarded to sub-tabs that
+  // host screen-relative popups (the media frame colour picker).
+  property var screen
 
   property list<var> cardsModel: []
   property list<var> cardsDefault: [
@@ -57,28 +60,12 @@ ColumnLayout {
     availableWidgets.clear();
     var sortedEntries = DashboardWidgetRegistry.getAvailableWidgets().slice().sort();
     sortedEntries.forEach(entry => {
-      const isPlugin = DashboardWidgetRegistry.isPluginWidget(entry);
-      let displayName = entry;
-      let badges = [];
-      if (isPlugin) {
-        const pluginId = entry.replace("plugin:", "");
-        const manifest = PluginRegistry.getPluginManifest(pluginId);
-        if (manifest && manifest.name) {
-          displayName = manifest.name;
-        } else {
-          displayName = pluginId;
-        }
-        badges.push({
-                      "icon": "plugin",
-                      "color": Color.mSecondary
-                    });
-      }
-      availableWidgets.append({
-                                "key": entry,
-                                "name": displayName,
-                                "badges": badges
-                              });
-    });
+                            availableWidgets.append({
+                                                      "key": entry,
+                                                      "name": entry,
+                                                      "badges": []
+                                                    });
+                          });
     // Starts empty
     cardsModel = [];
 
@@ -142,6 +129,11 @@ ColumnLayout {
       tabIndex: 2
       checked: subTabBar.currentIndex === 2
     }
+    NTabButton {
+      text: "Media"
+      tabIndex: 3
+      checked: subTabBar.currentIndex === 3
+    }
   }
 
   Item {
@@ -169,7 +161,10 @@ ColumnLayout {
       onReorderWidgetInSection: (section, fromIndex, toIndex) => _reorderWidgetInSection(section, fromIndex, toIndex)
       onUpdateWidgetSettingsInSection: (section, index, settings) => _updateWidgetSettingsInSection(section, index, settings)
       onMoveWidgetBetweenSections: (fromSection, index, toSection) => _moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+    }
+
+    MediaSubTab {
+      screen: root.screen
     }
   }
 
@@ -241,12 +236,5 @@ ColumnLayout {
   // Base list model for all combo boxes
   ListModel {
     id: availableWidgets
-  }
-
-  // Shared Plugin Settings Popup
-  NPluginSettingsPopup {
-    id: pluginSettingsDialog
-    parent: Overlay.overlay
-    showToastOnSave: false
   }
 }

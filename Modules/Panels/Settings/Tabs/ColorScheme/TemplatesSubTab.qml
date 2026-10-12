@@ -306,11 +306,11 @@ ColumnLayout {
     description: "Only enable if you know what you are doing — refer to our online documentation."
     checked: Settings.data.templates.enableUserTheming
     onToggled: checked => {
-      Settings.data.templates.enableUserTheming = checked;
-      if (checked) {
-        TemplateRegistry.writeUserTemplatesToml();
-      }
-      AppThemeService.generate();
-    }
+                 Settings.data.templates.enableUserTheming = checked;
+                 if (checked) {
+                   TemplateRegistry.writeUserTemplatesToml();
+                 }
+                 AppThemeService.generate();
+               }
   }
 }

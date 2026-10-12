@@ -2,10 +2,10 @@
 
 ## Fork Information
 
-**Agnoctural** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell), which was discontinued after v4 in favor of a C++ rewrite (v5).
+**Mordial** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell), which was discontinued after v4 in favor of a C++ rewrite (v5).
 
 **Current Maintainer:** Nullfjord (SUDOER1337)  
-**Maintained at:** https://github.com/SUDOER1337/agnocturnal-shell
+**Maintained at:** https://github.com/SUDOER1337/mordial-shell
 
 ---
 
@@ -20,7 +20,7 @@ Agnoctural Shell is built upon the foundation of Noctalia Shell, made possible b
 
 ### Core Framework
 
-- **[Quickshell](https://github.com/outfoxxed/quickshell)** - The Qt/QML-based Wayland shell framework that powers Noctalia and Agnoctural
+- **[Quickshell](https://github.com/outfoxxed/quickshell)** - The Qt/QML-based Wayland shell framework that powers Noctalia and Mordial
 - **[Noctalia Team](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors)** - Original creators and maintainers
 
 ### Runtime Dependencies
@@ -52,9 +52,9 @@ Agnoctural Shell is built upon the foundation of Noctalia Shell, made possible b
 - The **Wayland** community for building the future of Linux desktop graphics
 - The **Niri**, **Hyprland**, **Sway**, **Labwc**, and **MangoWC** teams for their excellent Wayland compositors
 - All the original [Noctalia contributors](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors) for building this amazing shell
-- All users and contributors who help maintain and improve Agnoctural
+- All users and contributors who help maintain and improve Mordial
 
 ## License
-Agnoctural Shell is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Mordial Shell is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 Each dependency listed above is governed by its own respective license. Please refer to their individual projects for licensing information.

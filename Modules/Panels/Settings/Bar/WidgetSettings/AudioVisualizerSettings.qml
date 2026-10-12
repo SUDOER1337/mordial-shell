@@ -44,9 +44,9 @@ ColumnLayout {
     description: "Select the color for the visualizer."
     currentKey: root.valueColorName
     onSelected: key => {
-      root.valueColorName = key;
-      saveSettings();
-    }
+                  root.valueColorName = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.colorName
   }
 
@@ -55,9 +55,9 @@ ColumnLayout {
     description: "When enabled, the visualizer is hidden unless a player is actively playing."
     checked: valueHideWhenIdle
     onToggled: checked => {
-      valueHideWhenIdle = checked;
-      saveSettings();
-    }
+                 valueHideWhenIdle = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideWhenIdle
   }
 }

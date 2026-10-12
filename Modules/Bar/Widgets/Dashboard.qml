@@ -89,17 +89,17 @@ NIconButton {
     ]
 
     onTriggered: action => {
-      contextMenu.close();
-      PanelService.closeContextMenu(screen);
+                   contextMenu.close();
+                   PanelService.closeContextMenu(screen);
 
-      if (action === "open-launcher") {
-        PanelService.toggleLauncher(screen);
-      } else if (action === "open-settings") {
-        SettingsPanelService.openToTab(0, -1, screen);
-      } else if (action === "widget-settings") {
-        BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-      }
-    }
+                   if (action === "open-launcher") {
+                     PanelService.toggleLauncher(screen);
+                   } else if (action === "open-settings") {
+                     SettingsPanelService.openToTab(0, -1, screen);
+                   } else if (action === "widget-settings") {
+                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
+                   }
+                 }
   }
 
   hoverOpensPanel: true
@@ -111,7 +111,7 @@ NIconButton {
                             "open": () => {
                               var panel = PanelService.getPanel("dashboardPanel", screen);
                               if (!panel)
-                                return;
+                              return;
                               if (Settings.data.dashboard.position === "close_to_bar_button") {
                                 panel.open(root);
                               } else {

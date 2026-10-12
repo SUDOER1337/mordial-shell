@@ -157,14 +157,14 @@ Singleton {
       var job = root.pending;
       root.pending = null;
       if (!job || !root.enabled)
-        return;
+      return;
 
       if (job.track) {
         // Opening an already-open panel would re-run its position logic, and
         // closing it on hover-out would fight the user who opened it by click.
         var panel = job.panel ? PanelService.getPanel(job.panel, job.screen) : null;
         if (panel && panel.isPanelOpen)
-          return;
+        return;
 
         job.open();
         root.trackingPanel = true;
@@ -181,7 +181,7 @@ Singleton {
     onTriggered: {
       // Bail out if the feature was switched off while a panel was hover-open
       if (!root.enabled || !root.trackingPanel || root.widgetHovered || root.panelHovered)
-        return;
+      return;
 
       root.trackingPanel = false;
       PanelService.closePanel();

@@ -7,12 +7,13 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 
 import qs.Commons
+import qs.Modules.Panels.Dashboard
 import qs.Modules.Panels.Settings
-import qs.Services.Agnocturnal
 import qs.Services.Compositor
 import qs.Services.Hardware
 import qs.Services.Location
 import qs.Services.Media
+import qs.Services.Mordial
 import qs.Services.Networking
 import qs.Services.Power
 import qs.Services.System
@@ -132,14 +133,14 @@ Singleton {
 
   function _settingsToggle(tabId, subTabId) {
     root.screenDetector.withCurrentScreen(screen => {
-      SettingsPanelService.toggle(tabId, subTabId, screen);
-    });
+                                            SettingsPanelService.toggle(tabId, subTabId, screen);
+                                          });
   }
 
   function _settingsOpen(tabId, subTabId) {
     root.screenDetector.withCurrentScreen(screen => {
-      SettingsPanelService.openToTab(tabId, subTabId, screen);
-    });
+                                            SettingsPanelService.openToTab(tabId, subTabId, screen);
+                                          });
   }
 
   IpcHandler {
@@ -168,9 +169,9 @@ Singleton {
     target: "calendar"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-        var clockPanel = PanelService.getPanel("clockPanel", screen);
-        clockPanel?.toggle(null, "Clock");
-      });
+                                              var clockPanel = PanelService.getPanel("clockPanel", screen);
+                                              clockPanel?.toggle(null, "Clock");
+                                            });
     }
   }
 
@@ -179,9 +180,9 @@ Singleton {
     function toggleHistory() {
       // Will attempt to open the panel next to the bar button if any.
       root.screenDetector.withCurrentScreen(screen => {
-        var notificationHistoryPanel = PanelService.getPanel("notificationHistoryPanel", screen);
-        notificationHistoryPanel.toggle(null, "NotificationHistory");
-      });
+                                              var notificationHistoryPanel = PanelService.getPanel("notificationHistoryPanel", screen);
+                                              notificationHistoryPanel.toggle(null, "NotificationHistory");
+                                            });
     }
     function toggleDND() {
       NotificationService.doNotDisturb = !NotificationService.doNotDisturb;
@@ -320,90 +321,90 @@ Singleton {
     target: "launcher"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInAppMode = !searchText.startsWith(">");
-        if (!PanelService.isLauncherOpen(screen)) {
-          // Closed -> open in app mode
-          PanelService.openLauncherWithSearch(screen, "");
-        } else if (isInAppMode) {
-          // Already in app mode -> close
-          PanelService.closeLauncher(screen);
-        } else {
-          // In another mode -> switch to app mode
-          PanelService.setLauncherSearchText(screen, "");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInAppMode = !searchText.startsWith(">");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                // Closed -> open in app mode
+                                                PanelService.openLauncherWithSearch(screen, "");
+                                              } else if (isInAppMode) {
+                                                // Already in app mode -> close
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                // In another mode -> switch to app mode
+                                                PanelService.setLauncherSearchText(screen, "");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function clipboard() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInClipMode = searchText.startsWith(">clip");
-        if (!PanelService.isLauncherOpen(screen)) {
-          // Closed -> open in clipboard mode
-          PanelService.openLauncherWithSearch(screen, ">clip ");
-        } else if (isInClipMode) {
-          // Already in clipboard mode -> close
-          PanelService.closeLauncher(screen);
-        } else {
-          // In another mode -> switch to clipboard mode
-          PanelService.setLauncherSearchText(screen, ">clip ");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInClipMode = searchText.startsWith(">clip");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                // Closed -> open in clipboard mode
+                                                PanelService.openLauncherWithSearch(screen, ">clip ");
+                                              } else if (isInClipMode) {
+                                                // Already in clipboard mode -> close
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                // In another mode -> switch to clipboard mode
+                                                PanelService.setLauncherSearchText(screen, ">clip ");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function command() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInCmdMode = searchText.startsWith(">cmd");
-        if (!PanelService.isLauncherOpen(screen)) {
-          PanelService.openLauncherWithSearch(screen, ">cmd ");
-        } else if (isInCmdMode) {
-          PanelService.closeLauncher(screen);
-        } else {
-          PanelService.setLauncherSearchText(screen, ">cmd ");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInCmdMode = searchText.startsWith(">cmd");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                PanelService.openLauncherWithSearch(screen, ">cmd ");
+                                              } else if (isInCmdMode) {
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                PanelService.setLauncherSearchText(screen, ">cmd ");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function emoji() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInEmojiMode = searchText.startsWith(">emoji");
-        if (!PanelService.isLauncherOpen(screen)) {
-          // Closed -> open in emoji mode
-          PanelService.openLauncherWithSearch(screen, ">emoji ");
-        } else if (isInEmojiMode) {
-          // Already in emoji mode -> close
-          PanelService.closeLauncher(screen);
-        } else {
-          // In another mode -> switch to emoji mode
-          PanelService.setLauncherSearchText(screen, ">emoji ");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInEmojiMode = searchText.startsWith(">emoji");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                // Closed -> open in emoji mode
+                                                PanelService.openLauncherWithSearch(screen, ">emoji ");
+                                              } else if (isInEmojiMode) {
+                                                // Already in emoji mode -> close
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                // In another mode -> switch to emoji mode
+                                                PanelService.setLauncherSearchText(screen, ">emoji ");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function windows() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInWindowsMode = searchText.startsWith(">win");
-        if (!PanelService.isLauncherOpen(screen)) {
-          PanelService.openLauncherWithSearch(screen, ">win ");
-        } else if (isInWindowsMode) {
-          PanelService.closeLauncher(screen);
-        } else {
-          PanelService.setLauncherSearchText(screen, ">win ");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInWindowsMode = searchText.startsWith(">win");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                PanelService.openLauncherWithSearch(screen, ">win ");
+                                              } else if (isInWindowsMode) {
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                PanelService.setLauncherSearchText(screen, ">win ");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function settings() {
       root.screenDetector.withCurrentScreen(screen => {
-        var searchText = PanelService.getLauncherSearchText(screen);
-        var isInSettingsMode = searchText.startsWith(">settings");
-        if (!PanelService.isLauncherOpen(screen)) {
-          PanelService.openLauncherWithSearch(screen, ">settings ");
-        } else if (isInSettingsMode) {
-          PanelService.closeLauncher(screen);
-        } else {
-          PanelService.setLauncherSearchText(screen, ">settings ");
-        }
-      }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInSettingsMode = searchText.startsWith(">settings");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                PanelService.openLauncherWithSearch(screen, ">settings ");
+                                              } else if (isInSettingsMode) {
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                PanelService.setLauncherSearchText(screen, ">settings ");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
   }
 
@@ -531,21 +532,21 @@ Singleton {
     }
     function togglePanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var panel = PanelService.getPanel("audioPanel", screen);
-        panel?.toggle(null, "Volume");
-      });
+                                              var panel = PanelService.getPanel("audioPanel", screen);
+                                              panel?.toggle(null, "Volume");
+                                            });
     }
     function openPanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var panel = PanelService.getPanel("audioPanel", screen);
-        panel?.open(null, "Volume");
-      });
+                                              var panel = PanelService.getPanel("audioPanel", screen);
+                                              panel?.open(null, "Volume");
+                                            });
     }
     function closePanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var panel = PanelService.getPanel("audioPanel", screen);
-        panel?.close(null, "Volume");
-      });
+                                              var panel = PanelService.getPanel("audioPanel", screen);
+                                              panel?.close(null, "Volume");
+                                            });
     }
   }
 
@@ -553,10 +554,10 @@ Singleton {
     target: "sessionMenu"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-        var sessionMenuPanel = PanelService.getPanel("sessionMenuPanel", screen);
-        // Session Menu is never open near the bar
-        sessionMenuPanel?.toggle();
-      });
+                                              var sessionMenuPanel = PanelService.getPanel("sessionMenuPanel", screen);
+                                              // Session Menu is never open near the bar
+                                              sessionMenuPanel?.toggle();
+                                            });
     }
 
     function lock() {
@@ -613,10 +614,10 @@ Singleton {
     target: "wallpaper"
     function toggle() {
       if (Settings.data.wallpaper.enabled) {
+        // The picker is a dashboard page, so toggle lands on that page.
         root.screenDetector.withCurrentScreen(screen => {
-          var wallpaperPanel = PanelService.getPanel("wallpaperPanel", screen);
-          wallpaperPanel?.toggle();
-        });
+                                                DashboardPanelService.togglePage(DashboardPanel.Page.Wallpaper, screen);
+                                              });
       }
     }
 
@@ -684,9 +685,9 @@ Singleton {
     target: "network"
     function togglePanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var networkPanel = PanelService.getPanel("networkPanel", screen);
-        networkPanel?.toggle(null, "Network");
-      });
+                                              var networkPanel = PanelService.getPanel("networkPanel", screen);
+                                              networkPanel?.toggle(null, "Network");
+                                            });
     }
   }
 
@@ -703,9 +704,9 @@ Singleton {
     }
     function togglePanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var bluetoothPanel = PanelService.getPanel("bluetoothPanel", screen);
-        bluetoothPanel?.toggle(null, "Bluetooth");
-      });
+                                              var bluetoothPanel = PanelService.getPanel("bluetoothPanel", screen);
+                                              bluetoothPanel?.toggle(null, "Bluetooth");
+                                            });
     }
     function toggleAutoConnect() {
       Settings.data.network.bluetoothAutoConnect = !Settings.data.network.bluetoothAutoConnect;
@@ -735,9 +736,9 @@ Singleton {
     target: "battery"
     function togglePanel() {
       root.screenDetector.withCurrentScreen(screen => {
-        var batteryPanel = PanelService.getPanel("batteryPanel", screen);
-        batteryPanel?.toggle(null, "Battery");
-      });
+                                              var batteryPanel = PanelService.getPanel("batteryPanel", screen);
+                                              batteryPanel?.toggle(null, "Battery");
+                                            });
     }
   }
 
@@ -771,9 +772,9 @@ Singleton {
 
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-        var panel = PanelService.getPanel("dashboardPanel", screen);
-        panel?.toggle(null, "MediaMini");
-      });
+                                              var panel = PanelService.getPanel("dashboardPanel", screen);
+                                              panel?.toggle(null, "MediaMini");
+                                            });
     }
 
     function playPause() {
@@ -870,75 +871,9 @@ Singleton {
     target: "systemMonitor"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-        var panel = PanelService.getPanel("systemStatsPanel", screen);
-        panel?.toggle(null, "SystemMonitor");
-      });
-    }
-  }
-
-  IpcHandler {
-    target: "plugin"
-    function openSettings(key: string) {
-      var manifest = PluginRegistry.getPluginManifest(key);
-      if (!manifest) {
-        Logger.w("IPC", "Plugin not found:", key);
-        return;
-      }
-      if (!manifest.entryPoints?.settings) {
-        Logger.w("IPC", "Plugin has no settings entry point:", key);
-        return;
-      }
-      root.screenDetector.withCurrentScreen(screen => {
-        BarService.openPluginSettings(screen, manifest);
-      });
-    }
-
-    function openPanel(key: string) {
-      var manifest = PluginRegistry.getPluginManifest(key);
-      if (!manifest) {
-        Logger.w("IPC", "Plugin not found:", key);
-        return;
-      }
-      if (!manifest.entryPoints?.panel) {
-        Logger.w("IPC", "Plugin has no panel entry point:", key);
-        return;
-      }
-      root.screenDetector.withCurrentScreen(screen => {
-        PluginService.openPluginPanel(key, screen, null);
-      });
-    }
-
-    function closePanel(key: string) {
-      var manifest = PluginRegistry.getPluginManifest(key);
-      if (!manifest) {
-        Logger.w("IPC", "Plugin not found:", key);
-        return;
-      }
-      if (!manifest.entryPoints?.panel) {
-        Logger.w("IPC", "Plugin has no panel entry point:", key);
-        return;
-      }
-      root.screenDetector.withCurrentScreen(screen => {
-        var api = PluginService.getPluginAPI(key);
-        if (api) {
-          api.closePanel(screen);
-        }
-      });
-    }
-
-    function togglePanel(key: string) {
-      var manifest = PluginRegistry.getPluginManifest(key);
-      if (!manifest) {
-        Logger.w("IPC", "Plugin not found:", key);
-        return;
-      }
-      if (!manifest.entryPoints?.panel) {
-        Logger.w("IPC", "Plugin has no panel entry point:", key);
-        return;
-      }
-      root.screenDetector.withCurrentScreen(screen => {
-        PluginService.togglePluginPanel(key, screen, null);
-      });
+                                              var panel = PanelService.getPanel("systemStatsPanel", screen);
+                                              panel?.toggle(null, "SystemMonitor");
+                                            });
     }
   }
 }

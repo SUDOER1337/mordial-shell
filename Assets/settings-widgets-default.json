@@ -127,10 +127,11 @@
       "showProgressRing": true,
       "visualizerType": "linear",
       "textColor": "none",
-      "compactMode": false,
       "panelShowAlbumArt": true,
       "panelVisualizerPlacement": "art",
-      "panelAlbumArtSize": 180
+      "panelAlbumArtSize": 0,
+      "showTrackTitle": true,
+      "showArtist": true
     },
     "Microphone": {
       "displayMode": "onhover",
@@ -294,4 +295,3 @@
     }
   }
 }
-AGNOCTURAL_EOF

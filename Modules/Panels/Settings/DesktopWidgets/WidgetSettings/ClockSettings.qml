@@ -94,9 +94,9 @@ ColumnLayout {
       }
     ]
     onSelected: key => {
-      valueClockStyle = key;
-      saveSettings();
-    }
+                  valueClockStyle = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.clockStyle
   }
 
@@ -105,9 +105,9 @@ ColumnLayout {
     description: "Apply theme colors for emphasis."
     currentKey: valueClockColor
     onSelected: key => {
-      valueClockColor = key;
-      saveSettings();
-    }
+                  valueClockColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.clockColor
   }
 
@@ -117,9 +117,9 @@ ColumnLayout {
     description: "Override the default font selection with a custom font for the clock."
     checked: valueUseCustomFont
     onToggled: checked => {
-      valueUseCustomFont = checked;
-      saveSettings();
-    }
+                 valueUseCustomFont = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.useCustomFont
   }
 
@@ -272,9 +272,9 @@ ColumnLayout {
     description: "Show the background container for the clock widget."
     checked: valueShowBackground
     onToggled: checked => {
-      valueShowBackground = checked;
-      saveSettings();
-    }
+                 valueShowBackground = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showBackground
   }
 
@@ -285,9 +285,9 @@ ColumnLayout {
     description: "Use rounded corners for the widget background."
     checked: valueRoundedCorners
     onToggled: checked => {
-      valueRoundedCorners = checked;
-      saveSettings();
-    }
+                 valueRoundedCorners = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.roundedCorners
   }
 }

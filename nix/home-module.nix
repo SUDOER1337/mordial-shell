@@ -5,26 +5,26 @@
   ...
 }:
 let
-  cfg = config.programs.agnoctural-shell;
+  cfg = config.programs.mordial-shell;
   jsonFormat = pkgs.formats.json { };
   tomlFormat = pkgs.formats.toml { };
 
   generateJson =
     name: value:
     if lib.isString value then
-      pkgs.writeText "noctalia-${name}.json" value
+      pkgs.writeText "mordial-${name}.json" value
     else if builtins.isPath value || lib.isStorePath value then
       value
     else
-      jsonFormat.generate "noctalia-${name}.json" value;
+      jsonFormat.generate "mordial-${name}.json" value;
 in
 {
-  options.programs.agnoctural-shell = {
-    enable = lib.mkEnableOption "Noctalia shell configuration";
+  options.programs.mordial-shell = {
+    enable = lib.mkEnableOption "Mordial shell configuration";
 
     package = lib.mkOption {
       type = lib.types.nullOr lib.types.package;
-      description = "The agnoctural-shell package to use";
+      description = "The mordial-shell package to use";
     };
 
     settings = lib.mkOption {
@@ -54,8 +54,8 @@ in
         }
       '';
       description = ''
-        Noctalia shell configuration settings as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/settings.json.
+        Mordial shell configuration settings as an attribute set, string
+        or filepath, to be written to ~/.config/mordial/settings.json.
       '';
     };
 
@@ -87,8 +87,8 @@ in
         }
       '';
       description = ''
-        Noctalia shell color configuration as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/colors.json.
+        Mordial shell color configuration as an attribute set, string
+        or filepath, to be written to ~/.config/mordial/colors.json.
       '';
     };
 
@@ -105,7 +105,7 @@ in
         {
           templates = {
             neovim = {
-              input_path = "~/.config/noctalia/templates/template.lua";
+              input_path = "~/.config/mordial/templates/template.lua";
               output_path = "~/.config/nvim/generated.lua";
               post_hook = "pkill -SIGUSR1 nvim";
             };
@@ -113,7 +113,7 @@ in
         }
       '';
       description = ''
-        Template definitions for Noctalia, to be written to ~/.config/noctalia/user-templates.toml.
+        Template definitions for Mordial, to be written to ~/.config/mordial/user-templates.toml.
 
         This option accepts:
         - a Nix attrset (converted to TOML automatically)
@@ -136,7 +136,7 @@ in
           sources = [
             {
               enabled = true;
-              name = "Noctalia Plugins";
+              name = "Mordial Plugins";
               url = "https://github.com/noctalia-dev/noctalia-plugins";
             }
           ];
@@ -150,8 +150,8 @@ in
         }
       '';
       description = ''
-        Noctalia shell plugin configuration as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/plugins.json.
+        Mordial shell plugin configuration as an attribute set, string
+        or filepath, to be written to ~/.config/mordial/plugins.json.
       '';
     };
 
@@ -172,9 +172,9 @@ in
           };
         }
       '';
-      description = ''
-        Each plugin’s settings as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/plugins/plugin-name/settings.json.
+description = ''
+        Each plugin's settings as an attribute set, string
+        or filepath, to be written to ~/.config/mordial/plugins/plugin-name/settings.json.
       '';
     };
   };
@@ -183,28 +183,28 @@ in
     home.packages = lib.optional (cfg.package != null) cfg.package;
 
     xdg.configFile = {
-      "noctalia/settings.json" = lib.mkIf (cfg.settings != { }) {
+      "mordial/settings.json" = lib.mkIf (cfg.settings != { }) {
         source = generateJson "settings" cfg.settings;
       };
-      "noctalia/colors.json" = lib.mkIf (cfg.colors != { }) {
+      "mordial/colors.json" = lib.mkIf (cfg.colors != { }) {
         source = generateJson "colors" cfg.colors;
       };
-      "noctalia/plugins.json" = lib.mkIf (cfg.plugins != { }) {
+      "mordial/plugins.json" = lib.mkIf (cfg.plugins != { }) {
         source = generateJson "plugins" cfg.plugins;
       };
-      "noctalia/user-templates.toml" = lib.mkIf (cfg.user-templates != { }) {
+      "mordial/user-templates.toml" = lib.mkIf (cfg.user-templates != { }) {
         source =
           if lib.isString cfg.user-templates then
-            pkgs.writeText "noctalia-user-templates.toml" cfg.user-templates
+            pkgs.writeText "mordial-user-templates.toml" cfg.user-templates
           else if builtins.isPath cfg.user-templates || lib.isStorePath cfg.user-templates then
             cfg.user-templates
           else
-            tomlFormat.generate "noctalia-user-templates.toml" cfg.user-templates;
+            tomlFormat.generate "mordial-user-templates.toml" cfg.user-templates;
       };
     }
     // lib.mapAttrs' (
       name: value:
-      lib.nameValuePair "noctalia/plugins/${name}/settings.json" {
+      lib.nameValuePair "mordial/plugins/${name}/settings.json" {
         source = generateJson "${name}-settings" value;
       }
     ) cfg.pluginSettings;

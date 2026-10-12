@@ -64,9 +64,9 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-      root.valueHideMode = key;
-      saveSettings();
-    }
+                  root.valueHideMode = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.hideMode
   }
 
@@ -74,9 +74,9 @@ ColumnLayout {
     label: "Select color"
     currentKey: valueTextColor
     onSelected: key => {
-      valueTextColor = key;
-      saveSettings();
-    }
+                  valueTextColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.textColor
   }
 
@@ -86,9 +86,9 @@ ColumnLayout {
     description: "Display the window title."
     checked: root.valueShowText
     onToggled: checked => {
-      root.valueShowText = checked;
-      saveSettings();
-    }
+                 root.valueShowText = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showText
   }
 
@@ -98,9 +98,9 @@ ColumnLayout {
     description: "Display the application icon next to the window title."
     checked: root.valueShowIcon
     onToggled: checked => {
-      root.valueShowIcon = checked;
-      saveSettings();
-    }
+                 root.valueShowIcon = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showIcon
   }
 
@@ -110,9 +110,9 @@ ColumnLayout {
     description: "Apply theme colors to active window icon."
     checked: root.valueColorizeIcons
     onToggled: checked => {
-      root.valueColorizeIcons = checked;
-      saveSettings();
-    }
+                 root.valueColorizeIcons = checked;
+                 saveSettings();
+               }
     visible: root.valueShowIcon
     defaultValue: widgetMetadata.colorizeIcons
   }
@@ -134,9 +134,9 @@ ColumnLayout {
     description: "When enabled, the widget will always use the maximum width instead of dynamically adjusting to content."
     checked: valueUseFixedWidth
     onToggled: checked => {
-      valueUseFixedWidth = checked;
-      saveSettings();
-    }
+                 valueUseFixedWidth = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.useFixedWidth
   }
 
@@ -160,9 +160,9 @@ ColumnLayout {
     currentKey: valueScrollingMode
     defaultValue: widgetMetadata.scrollingMode
     onSelected: key => {
-      valueScrollingMode = key;
-      saveSettings();
-    }
+                  valueScrollingMode = key;
+                  saveSettings();
+                }
     minimumWidth: 200
   }
 }

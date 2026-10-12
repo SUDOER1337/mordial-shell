@@ -1,9 +1,16 @@
+// File: Modules/Bar/Widgets/WallpaperSelector.qml
+// =============================================================================
+// Bar widget that opens the Dashboard on its wallpaper page (the wallpaper
+// picker is a Dashboard page, not a panel of its own).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Modules.Bar.Extras
+import qs.Modules.Panels.Dashboard
 import qs.Services.UI
 import qs.Widgets
 
@@ -38,7 +45,7 @@ NIconButton {
   customRadius: Style.radiusL
   icon: "wallpaper-selector"
   tooltipText: {
-    if (PanelService.getPanel("wallpaperPanel", screen)?.isPanelOpen) {
+    if (DashboardPanelService.isOpen(screen)) {
       return "";
     } else {
       return "Wallpaper selector";
@@ -67,15 +74,15 @@ NIconButton {
     ]
 
     onTriggered: action => {
-      contextMenu.close();
-      PanelService.closeContextMenu(screen);
+                   contextMenu.close();
+                   PanelService.closeContextMenu(screen);
 
-      if (action === "random-wallpaper") {
-        WallpaperService.setRandomWallpaper();
-      } else if (action === "widget-settings") {
-        BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-      }
-    }
+                   if (action === "random-wallpaper") {
+                     WallpaperService.setRandomWallpaper();
+                   } else if (action === "widget-settings") {
+                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
+                   }
+                 }
   }
 
   hoverOpensPanel: true
@@ -83,28 +90,18 @@ NIconButton {
     HoverPanelService.arm({
                             "screen": screen,
                             "anchor": root,
-                            "panel": "wallpaperPanel",
+                            "panel": "dashboardPanel",
                             "open": () => {
-                              var wallpaperPanel = PanelService.getPanel("wallpaperPanel", screen);
-                              if (!wallpaperPanel)
-                                return;
-                              if (Settings.data.wallpaper.panelPosition === "follow_bar") {
-                                wallpaperPanel.open(root);
-                              } else {
-                                wallpaperPanel.open();
-                              }
+                              // Only opens when the dashboard is closed, so this
+                              // never steals the page the user is looking at.
+                              DashboardPanelService.openPage(DashboardPanel.Page.Wallpaper, screen, root);
                             }
                           });
   }
   onExited: HoverPanelService.disarm(root)
 
   onClicked: {
-    var wallpaperPanel = PanelService.getPanel("wallpaperPanel", screen);
-    if (Settings.data.wallpaper.panelPosition === "follow_bar") {
-      wallpaperPanel?.toggle(this);
-    } else {
-      wallpaperPanel?.toggle();
-    }
+    DashboardPanelService.togglePage(DashboardPanel.Page.Wallpaper, screen, root);
   }
   onRightClicked: {
     PanelService.showContextMenu(contextMenu, root, screen);

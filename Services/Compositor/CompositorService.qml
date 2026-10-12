@@ -338,7 +338,7 @@ Singleton {
       onRead: line => {
         const trimmed = line.trim();
         if (trimmed.length === 0)
-          return;
+        return;
         try {
           const data = JSON.parse(trimmed);
           if (data.monitors && Array.isArray(data.monitors)) {
@@ -384,7 +384,7 @@ Singleton {
       onRead: line => {
         const trimmed = line.trim();
         if (trimmed.length === 0)
-          return;
+        return;
         try {
           const data = JSON.parse(trimmed);
           const layout = String(data.layout ?? "").trim();
@@ -434,10 +434,10 @@ Singleton {
 
   Component.onCompleted: {
     Qt.callLater(() => {
-      if (typeof ShellState !== 'undefined' && ShellState.isLoaded) {
-        loadDisplayScalesFromState();
-      }
-    });
+                   if (typeof ShellState !== 'undefined' && ShellState.isLoaded) {
+                     loadDisplayScalesFromState();
+                   }
+                 });
     initialize();
   }
 
@@ -666,8 +666,8 @@ Singleton {
     if (executeSessionAction("shutdown"))
       return;
     HooksService.executeSessionHook("shutdown", () => {
-      Quickshell.execDetached(["sh", "-c", "systemctl poweroff || loginctl poweroff"]);
-    });
+                                      Quickshell.execDetached(["sh", "-c", "systemctl poweroff || loginctl poweroff"]);
+                                    });
   }
 
   function reboot() {
@@ -675,8 +675,8 @@ Singleton {
     if (executeSessionAction("reboot"))
       return;
     HooksService.executeSessionHook("reboot", () => {
-      Quickshell.execDetached(["sh", "-c", "systemctl reboot || loginctl reboot"]);
-    });
+                                      Quickshell.execDetached(["sh", "-c", "systemctl reboot || loginctl reboot"]);
+                                    });
   }
 
   function userspaceReboot() {
@@ -684,8 +684,8 @@ Singleton {
     if (executeSessionAction("userspaceReboot"))
       return;
     HooksService.executeSessionHook("userspaceReboot", () => {
-      Quickshell.execDetached(["sh", "-c", "systemctl soft-reboot"]);
-    });
+                                      Quickshell.execDetached(["sh", "-c", "systemctl soft-reboot"]);
+                                    });
   }
 
   function rebootToUefi() {
@@ -693,8 +693,8 @@ Singleton {
     if (executeSessionAction("rebootToUefi"))
       return;
     HooksService.executeSessionHook("rebootToUefi", () => {
-      Quickshell.execDetached(["sh", "-c", "systemctl reboot --firmware-setup || loginctl reboot --firmware-setup"]);
-    });
+                                      Quickshell.execDetached(["sh", "-c", "systemctl reboot --firmware-setup || loginctl reboot --firmware-setup"]);
+                                    });
   }
 
   function turnOffMonitors() {

@@ -75,15 +75,15 @@ NIconButton {
     ]
 
     onTriggered: action => {
-      contextMenu.close();
-      PanelService.closeContextMenu(screen);
+                   contextMenu.close();
+                   PanelService.closeContextMenu(screen);
 
-      if (action === "launcher-settings") {
-        SettingsPanelService.openToTab(DashboardPanel.Tab.Launcher, -1, screen);
-      } else if (action === "widget-settings") {
-        BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-      }
-    }
+                   if (action === "launcher-settings") {
+                     SettingsPanelService.openToTab(DashboardPanel.Tab.Launcher, -1, screen);
+                   } else if (action === "widget-settings") {
+                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
+                   }
+                 }
   }
 
   hoverOpensPanel: true

@@ -8,8 +8,6 @@ import qs.Modules.Bar.Widgets
 Singleton {
   id: root
 
-  signal pluginWidgetRegistryUpdated
-
   // Widget registry object mapping widget names to components
   property var widgets: ({
                            "ActiveWindow": activeWindowComponent,
@@ -42,6 +40,18 @@ Singleton {
                            "WallpaperSelector": wallpaperSelectorComponent,
                            "Workspace": workspaceComponent
                          })
+
+  // Editor bounds for numeric widget settings, keyed by widget then by
+  // setting name. These live outside widgetMetadata on purpose: metadata is
+  // the persistence schema, so a bound declared there would be written into
+  // every user's settings file as if it were a value they had chosen. Both
+  // the settings page and the consuming widget read from here so a slider can
+  // never offer a range the widget then silently rejects.
+  property var widgetSettingBounds: ({
+                                       "MediaMini": {
+                                         "panelAlbumArtSize": [60, 320]
+                                       }
+                                     })
 
   property var widgetSettingsMap: ({
                                      "ActiveWindow": "WidgetSettings/ActiveWindowSettings.qml",
@@ -203,10 +213,14 @@ Singleton {
                                     "showProgressRing": true,
                                     "visualizerType": "linear",
                                     "textColor": "none",
-                                    "compactMode": false,
                                     "panelShowAlbumArt": true,
                                     "panelVisualizerPlacement": "art",
-                                    "panelAlbumArtSize": 110
+                                    // 0 = fill whatever vertical room the card has left
+                                    // after the controls; otherwise an absolute size in
+                                    // unscaled px, clamped to widgetSettingBounds.
+                                    "panelAlbumArtSize": 0,
+                                    "showTrackTitle": true,
+                                    "showArtist": true
                                   },
                                   "Microphone": {
                                     "displayMode": "onhover",
@@ -431,69 +445,9 @@ Singleton {
     return widgetMetadata[id] !== undefined;
   }
 
-  // ------------------------------
-  // Plugin widget registration
-
-  // Track plugin widgets separately
-  property var pluginWidgets: ({})
-  property var pluginWidgetMetadata: ({})
-
-  // Register a plugin widget
-  function registerPluginWidget(pluginId, component, metadata) {
-    if (!pluginId || !component) {
-      Logger.e("BarWidgetRegistry", "Cannot register plugin widget: invalid parameters");
-      return false;
-    }
-
-    // Add plugin: prefix to avoid conflicts with core widgets
-    var widgetId = "plugin:" + pluginId;
-
-    pluginWidgets[widgetId] = component;
-    pluginWidgetMetadata[widgetId] = metadata || {};
-
-    // Also add to main widgets object for unified access
-    widgets[widgetId] = component;
-    widgetMetadata[widgetId] = metadata || {};
-
-    Logger.i("BarWidgetRegistry", "Registered plugin widget:", widgetId);
-    root.pluginWidgetRegistryUpdated();
-    return true;
-  }
-
-  // Unregister a plugin widget
-  function unregisterPluginWidget(pluginId) {
-    var widgetId = "plugin:" + pluginId;
-
-    if (!pluginWidgets[widgetId]) {
-      Logger.w("BarWidgetRegistry", "Plugin widget not registered:", widgetId);
-      return false;
-    }
-
-    delete pluginWidgets[widgetId];
-    delete pluginWidgetMetadata[widgetId];
-    delete widgets[widgetId];
-    delete widgetMetadata[widgetId];
-
-    Logger.i("BarWidgetRegistry", "Unregistered plugin widget:", widgetId);
-    root.pluginWidgetRegistryUpdated();
-    return true;
-  }
-
-  // Check if a widget is a plugin widget
-  function isPluginWidget(id) {
-    return id.startsWith("plugin:");
-  }
-
   property var cpuIntensiveWidgets: ["AudioVisualizer"]
 
   function isCpuIntensive(id) {
-    if (pluginWidgetMetadata[id]?.cpuIntensive)
-      return true;
     return cpuIntensiveWidgets.indexOf(id) >= 0;
-  }
-
-  // Get list of plugin widget IDs
-  function getPluginWidgets() {
-    return Object.keys(pluginWidgets);
   }
 }

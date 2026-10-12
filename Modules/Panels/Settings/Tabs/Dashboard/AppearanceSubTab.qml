@@ -71,17 +71,45 @@ ColumnLayout {
       model: {
         const paths = Object.keys(SystemStatService.diskPercents).sort();
         return paths.map(path => ({
-          key: path,
-          name: path
-        }));
+                                    key: path,
+                                    name: path
+                                  }));
       }
-        currentKey: Settings.data.dashboard.diskPath || "/"
-        onSelected: key => Settings.data.dashboard.diskPath = key
-        defaultValue: Settings.getDefaultValue("dashboard.diskPath") || "/"
-      }
-      }
+      currentKey: Settings.data.dashboard.diskPath || "/"
+      onSelected: key => Settings.data.dashboard.diskPath = key
+      defaultValue: Settings.getDefaultValue("dashboard.diskPath") || "/"
+    }
 
-        Rectangle {
-        Layout.fillHeight: true
-      }
-      }
+    NValueSlider {
+      Layout.fillWidth: true
+      label: "Panel width"
+      description: "Width of the dashboard panel in pixels. The same size is used for every page, and the panel shrinks to fit if it does not fit on screen. Below about 1400px the four Home columns start compressing."
+      from: 1200
+      to: 2000
+      stepSize: 20
+      showReset: true
+      value: Settings.data.dashboard.panelWidth
+      defaultValue: Settings.getDefaultValue("dashboard.panelWidth")
+      onMoved: value => Settings.data.dashboard.panelWidth = value
+      text: Math.round(Settings.data.dashboard.panelWidth) + " px"
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: "Panel height"
+      description: "Height of the dashboard panel in pixels. Media and calendar columns scroll when the panel is shorter than their content."
+      from: 400
+      to: 1200
+      stepSize: 20
+      showReset: true
+      value: Settings.data.dashboard.panelHeight
+      defaultValue: Settings.getDefaultValue("dashboard.panelHeight")
+      onMoved: value => Settings.data.dashboard.panelHeight = value
+      text: Math.round(Settings.data.dashboard.panelHeight) + " px"
+    }
+  }
+
+  Rectangle {
+    Layout.fillHeight: true
+  }
+}

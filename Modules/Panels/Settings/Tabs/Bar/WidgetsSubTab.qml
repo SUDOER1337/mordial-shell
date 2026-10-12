@@ -18,8 +18,6 @@ ColumnLayout {
   property var updateWidgetSettingsInSection
   property var moveWidgetBetweenSections
 
-  signal openPluginSettings(var manifest)
-
   // This sub-tab edits the global default widget configuration (Settings.data.bar.widgets).
   // Per-screen widget overrides are edited in MonitorWidgetsConfig.qml (Monitors sub-tab).
 
@@ -56,7 +54,6 @@ ColumnLayout {
     onReorderWidget: (section, fromIndex, toIndex) => root.reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root.updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root.moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => root.openPluginSettings(manifest)
   }
 
   // Center Section
@@ -74,7 +71,6 @@ ColumnLayout {
     onReorderWidget: (section, fromIndex, toIndex) => root.reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root.updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root.moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => root.openPluginSettings(manifest)
   }
 
   // Right Section
@@ -92,6 +88,5 @@ ColumnLayout {
     onReorderWidget: (section, fromIndex, toIndex) => root.reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root.updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root.moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => root.openPluginSettings(manifest)
   }
 }

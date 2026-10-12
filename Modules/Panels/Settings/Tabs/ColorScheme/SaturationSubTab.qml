@@ -112,8 +112,8 @@ ColumnLayout {
       Layout.fillWidth: true
 
       onSaturationChanged: value => {
-        Settings.data.colorSchemes.saturation[modelData] = value;
-      }
+                             Settings.data.colorSchemes.saturation[modelData] = value;
+                           }
     }
   }
 
@@ -140,8 +140,8 @@ ColumnLayout {
       Layout.fillWidth: true
 
       onSaturationChanged: value => {
-        Settings.data.colorSchemes.saturation[modelData] = value;
-      }
+                             Settings.data.colorSchemes.saturation[modelData] = value;
+                           }
     }
   }
 }

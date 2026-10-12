@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
-import qs.Services.Agnocturnal
 import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
@@ -17,14 +16,6 @@ ColumnLayout {
   property alias availableWidgetsModel: availableWidgets
   ListModel {
     id: availableWidgets
-  }
-
-  // Listen for plugin widget registration/unregistration
-  Connections {
-    target: DesktopWidgetRegistry
-    function onPluginWidgetRegistryUpdated() {
-      updateAvailableWidgetsModel();
-    }
   }
 
   NToggle {
@@ -106,17 +97,8 @@ ColumnLayout {
         onRemoveWidget: (section, index) => _removeWidgetFromMonitor(modelData.name, index)
         onMoveWidget: (fromSection, index, toSection) => _moveWidgetToMonitor(fromSection, index, toSection)
         onUpdateWidgetSettings: (section, index, settings) => _updateWidgetSettingsForMonitor(modelData.name, index, settings)
-        pluginSettingsEntryPoints: ["desktopWidgetSettings", "settings"]
-        onOpenPluginSettingsRequested: (manifest, entryPoint) => pluginSettingsDialog.openPluginSettings(manifest, entryPoint)
       }
     }
-  }
-
-  // Shared Plugin Settings Popup
-  NPluginSettingsPopup {
-    id: pluginSettingsDialog
-    parent: Overlay.overlay
-    showToastOnSave: false
   }
 
   Component.onCompleted: {
@@ -173,27 +155,8 @@ ColumnLayout {
       }
       for (var i = 0; i < widgetIds.length; i++) {
         var widgetId = widgetIds[i];
-        var displayName = widgetId;
 
-        // Get plugin name for plugin widgets
-        var isPlugin = false;
-        if (DesktopWidgetRegistry.isPluginWidget(widgetId)) {
-          isPlugin = true;
-          var pluginId = widgetId.replace("plugin:", "");
-          var manifest = PluginRegistry.getPluginManifest(pluginId);
-          if (manifest && manifest.name) {
-            displayName = manifest.name;
-          }
-        }
-
-        // Add plugin badge first (with custom color)
         const badges = [];
-        if (isPlugin) {
-          badges.push({
-                        "icon": "plugin",
-                        "color": Color.mSecondary
-                      });
-        }
         if (DesktopWidgetRegistry.isCpuIntensive(widgetId)) {
           badges.push({
                         "icon": "cpu-intensive",
@@ -203,7 +166,7 @@ ColumnLayout {
 
         availableWidgets.append({
                                   "key": widgetId,
-                                  "name": displayName,
+                                  "name": widgetId,
                                   "badges": badges
                                 });
       }

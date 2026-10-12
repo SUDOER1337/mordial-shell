@@ -27,9 +27,9 @@ ColumnLayout {
     label: "Select icon color"
     currentKey: valueIconColor
     onSelected: key => {
-      valueIconColor = key;
-      saveSettings();
-    }
+                  valueIconColor = key;
+                  saveSettings();
+                }
     valueDefault: widgetMetadata.iconColor
   }
 }

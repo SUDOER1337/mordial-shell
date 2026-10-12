@@ -93,9 +93,9 @@ ColumnLayout {
     ]
     currentKey: valueVisualizerType
     onSelected: key => {
-      valueVisualizerType = key;
-      saveSettings();
-    }
+                  valueVisualizerType = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.visualizerType
   }
 
@@ -105,9 +105,9 @@ ColumnLayout {
     description: "Select the color for the visualizer."
     currentKey: valueColorName
     onSelected: key => {
-      valueColorName = key;
-      saveSettings();
-    }
+                  valueColorName = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.colorName
   }
 
@@ -117,9 +117,9 @@ ColumnLayout {
     description: "When enabled, the visualizer is hidden unless a player is actively playing."
     checked: valueHideWhenIdle
     onToggled: checked => {
-      valueHideWhenIdle = checked;
-      saveSettings();
-    }
+                 valueHideWhenIdle = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideWhenIdle
   }
 
@@ -133,9 +133,9 @@ ColumnLayout {
     description: "Show the background container."
     checked: valueShowBackground
     onToggled: checked => {
-      valueShowBackground = checked;
-      saveSettings();
-    }
+                 valueShowBackground = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showBackground
   }
 
@@ -146,9 +146,9 @@ ColumnLayout {
     description: "Enable rounded corners on the widget edges."
     checked: valueRoundedCorners
     onToggled: checked => {
-      valueRoundedCorners = checked;
-      saveSettings();
-    }
+                 valueRoundedCorners = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.roundedCorners
   }
 }

@@ -1,19 +1,19 @@
-# Fork Notes - Agnoctural Shell
+# Fork Notes - Mordial Shell
 
-This document explains the current state of Agnoctural as an independent fork of Noctalia Shell.
+This document explains the current state of Mordial as an independent fork of Noctalia Shell.
 
 ---
 
 ## Fork Status
 
-**Agnoctural** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (v4).
+**Mordial** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (v4).
 
 ### Timeline
 
 - **Original Noctalia v4** - Maintained by the Noctalia team as a complete QML/Quickshell desktop shell
 - **Noctalia v5 Announcement** - Full rewrite in C++ (no longer QML-based), focus shifted to v5 development
 - **Noctalia v4 Discontinued** - v4 no longer receives updates; replaced by C++ v5
-- **Agnoctural Fork Created** - Forked from Noctalia v4 for independent maintenance and continued QML-based development
+- **Mordial Fork Created** - Forked from Noctalia v4 for independent maintenance and continued QML-based development
 
 ---
 
@@ -36,7 +36,7 @@ This document explains the current state of Agnoctural as an independent fork of
 
 - Bug fixes for existing functionality
 - Compatibility updates for new Wayland compositor features
-- Configuration path changes (e.g., `~/.config/agnocturnal/`)
+- Configuration path changes (e.g., `~/.config/mordial/`)
 - Rebranding to reflect fork status
 - Minor feature additions that fit the shell's scope
 
@@ -52,7 +52,7 @@ This document explains the current state of Agnoctural as an independent fork of
 
 ### For Existing Noctalia v4 Users
 
-If you're migrating from Noctalia v4 to Agnoctural, note these changes:
+If you're migrating from Noctalia v4 to Mordial, note these changes:
 
 **Old Config Path:**
 
@@ -64,25 +64,25 @@ If you're migrating from Noctalia v4 to Agnoctural, note these changes:
 **New Config Path:**
 
 ```
-~/.config/agnocturnal/
-~/.cache/agnocturnal/
+~/.config/mordial/
+~/.cache/mordial/
 ```
 
 **Automatic Path Change:**
 
-- Agnoctural uses `AGNOCTURNAL_CONFIG_DIR` and `AGNOCTURNAL_CACHE_DIR` environment variables
-- If not set, defaults to `~/.config/agnocturnal/` and `~/.cache/agnocturnal/`
+- Mordial uses `MORDIAL_CONFIG_DIR` and `MORDIAL_CACHE_DIR` environment variables
+- If not set, defaults to `~/.config/mordial/` and `~/.cache/mordial/`
 
 **Manual Migration:**
 
 1. Copy your existing Noctalia v4 config:
    ```bash
-   cp -r ~/.config/noctalia/ ~/.config/agnocturnal/
-   cp -r ~/.cache/noctalia/ ~/.cache/agnocturnal/
+   cp -r ~/.config/noctalia/ ~/.config/mordial/
+   cp -r ~/.cache/noctalia/ ~/.cache/mordial/
    ```
-2. Update color scheme names in `~/.config/agnocturnal/settings.json`:
-   - `"Noctalia (default)"` → `"Agnoctural (default)"`
-   - `"Noctalia (legacy)"` → `"Agnoctural (legacy)"`
+2. Update color scheme names in `~/.config/mordial/settings.json`:
+   - `"Noctalia (default)"` → `"Mordial (default)"`
+   - `"Noctalia (legacy)"` → `"Mordial (legacy)"`
 
 ---
 
@@ -104,13 +104,13 @@ This fork does **not** submit pull requests upstream or claim to be the official
 
 ### Quickshell Dependency
 
-Agnoctural depends on Quickshell (Qt/QML framework) via the `noctalia-qs` fork:
+Mordial depends on Quickshell (Qt/QML framework) via the `noctalia-qs` fork:
 
 ```
 https://github.com/noctalia-dev/noctalia-qs
 ```
 
-This is the Quickshell fork maintained for Noctalia v4 compatibility. As long as this Quickshell fork is maintained, Agnoctural can continue running.
+This is the Quickshell fork maintained for Noctalia v4 compatibility. As long as this Quickshell fork is maintained, Mordial can continue running.
 
 **If `noctalia-qs` is unmaintained:**
 
@@ -139,7 +139,7 @@ This is the Quickshell fork maintained for Noctalia v4 compatibility. As long as
 
 ## How to Contribute
 
-If you'd like to contribute to Agnoctural:
+If you'd like to contribute to Mordial:
 
 1. **Bug Reports** - Open an issue describing the problem and reproduction steps
 2. **Feature Requests** - Open an issue or discuss in the repo's discussion section
@@ -150,6 +150,6 @@ If you'd like to contribute to Agnoctural:
 
 ## Disclaimer
 
-Agnoctural is provided **as-is** without guarantees. It's a community-maintained fork, not an official project. Use at your own risk.
+Mordial is provided **as-is** without guarantees. It's a community-maintained fork, not an official project. Use at your own risk.
 
 For the official Noctalia project and v5, visit: https://noctalia.dev

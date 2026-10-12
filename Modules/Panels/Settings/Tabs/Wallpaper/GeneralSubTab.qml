@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Modules.Panels.Dashboard
 import qs.Services.UI
 import qs.Widgets
 
@@ -18,7 +19,7 @@ ColumnLayout {
 
   NToggle {
     label: "Enable wallpaper management"
-    description: "Manage wallpapers with Noctalia. Uncheck if you prefer using another application."
+    description: "Manage wallpapers with Mordial. Uncheck if you prefer using another application."
     checked: Settings.data.wallpaper.enabled
     onToggled: checked => Settings.data.wallpaper.enabled = checked
     defaultValue: Settings.getDefaultValue("wallpaper.enabled")
@@ -33,58 +34,17 @@ ColumnLayout {
 
       NLabel {
         label: "Wallpaper selector"
-        description: "Choose your wallpaper."
+        description: "Choose your wallpaper in the dashboard."
         Layout.alignment: Qt.AlignTop
       }
 
       NIconButton {
         icon: "wallpaper-selector"
         tooltipText: "Wallpaper selector"
-        onClicked: PanelService.getPanel("wallpaperPanel", root.screen)?.toggle()
+        // The picker lives on the dashboard's wallpaper page, so the button
+        // opens the dashboard there (and closes it if it is already showing).
+        onClicked: DashboardPanelService.togglePage(DashboardPanel.Page.Wallpaper, root.screen, undefined)
       }
-    }
-
-    NComboBox {
-      label: "Position"
-      description: "Choose where the wallpaper selector panel appears."
-      Layout.fillWidth: true
-      model: [
-        {
-          "key": "follow_bar",
-          "name": "Follow bar"
-        },
-        {
-          "key": "center",
-          "name": "Center"
-        },
-        {
-          "key": "top_center",
-          "name": "Top center"
-        },
-        {
-          "key": "top_left",
-          "name": "Top left"
-        },
-        {
-          "key": "top_right",
-          "name": "Top right"
-        },
-        {
-          "key": "bottom_left",
-          "name": "Bottom left"
-        },
-        {
-          "key": "bottom_right",
-          "name": "Bottom right"
-        },
-        {
-          "key": "bottom_center",
-          "name": "Bottom center"
-        }
-      ]
-      currentKey: Settings.data.wallpaper.panelPosition
-      onSelected: key => Settings.data.wallpaper.panelPosition = key
-      defaultValue: Settings.getDefaultValue("wallpaper.panelPosition")
     }
 
     NComboBox {

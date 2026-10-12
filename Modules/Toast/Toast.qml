@@ -21,7 +21,7 @@ Item {
 
   readonly property bool isCompact: Settings.data.notifications?.density === "compact"
   readonly property int notificationWidth: Math.round((isCompact ? 320 : 440) * Style.uiScaleRatio)
-  readonly property int shadowPadding: Style.shadowBlurMax + Style.marginL
+  readonly property int shadowPadding: Style.cardShadowPadding
 
   width: notificationWidth + shadowPadding * 2
   height: Math.round(contentLayout.implicitHeight + Style.margin2M * 2 + shadowPadding * 2)
@@ -223,55 +223,55 @@ Item {
     acceptedButtons: Qt.LeftButton
     hoverEnabled: true
     onPressed: mouse => {
-      const globalPoint = toastDragArea.mapToGlobal(mouse.x, mouse.y);
-      root.pressGlobalX = globalPoint.x;
-      root.pressGlobalY = globalPoint.y;
-      root.isSwiping = false;
-    }
+                 const globalPoint = toastDragArea.mapToGlobal(mouse.x, mouse.y);
+                 root.pressGlobalX = globalPoint.x;
+                 root.pressGlobalY = globalPoint.y;
+                 root.isSwiping = false;
+               }
     onPositionChanged: mouse => {
-      if (!(mouse.buttons & Qt.LeftButton))
-        return;
-      const globalPoint = toastDragArea.mapToGlobal(mouse.x, mouse.y);
-      const rawDeltaX = globalPoint.x - root.pressGlobalX;
-      const rawDeltaY = globalPoint.y - root.pressGlobalY;
-      const deltaX = root.clampSwipeDelta(rawDeltaX);
-      const deltaY = root.clampVerticalSwipeDelta(rawDeltaY);
-      if (!root.isSwiping) {
-        if (root.useVerticalSwipe) {
-          if (Math.abs(deltaY) < root.swipeStartThreshold)
-            return;
-          root.isSwiping = true;
-        } else {
-          if (Math.abs(deltaX) < root.swipeStartThreshold)
-            return;
-          root.isSwiping = true;
-        }
-      }
-      if (root.useVerticalSwipe) {
-        root.swipeOffset = 0;
-        root.swipeOffsetY = deltaY;
-      } else {
-        root.swipeOffset = deltaX;
-        root.swipeOffsetY = 0;
-      }
-    }
+                         if (!(mouse.buttons & Qt.LeftButton))
+                         return;
+                         const globalPoint = toastDragArea.mapToGlobal(mouse.x, mouse.y);
+                         const rawDeltaX = globalPoint.x - root.pressGlobalX;
+                         const rawDeltaY = globalPoint.y - root.pressGlobalY;
+                         const deltaX = root.clampSwipeDelta(rawDeltaX);
+                         const deltaY = root.clampVerticalSwipeDelta(rawDeltaY);
+                         if (!root.isSwiping) {
+                           if (root.useVerticalSwipe) {
+                             if (Math.abs(deltaY) < root.swipeStartThreshold)
+                             return;
+                             root.isSwiping = true;
+                           } else {
+                             if (Math.abs(deltaX) < root.swipeStartThreshold)
+                             return;
+                             root.isSwiping = true;
+                           }
+                         }
+                         if (root.useVerticalSwipe) {
+                           root.swipeOffset = 0;
+                           root.swipeOffsetY = deltaY;
+                         } else {
+                           root.swipeOffset = deltaX;
+                           root.swipeOffsetY = 0;
+                         }
+                       }
     onReleased: mouse => {
-      if (mouse.button !== Qt.LeftButton)
-        return;
-      if (root.isSwiping) {
-        root.isSwiping = false;
-        const dismissDistance = root.useVerticalSwipe ? Math.abs(root.swipeOffsetY) : Math.abs(root.swipeOffset);
-        const threshold = root.useVerticalSwipe ? root.verticalSwipeDismissThreshold : root.swipeDismissThreshold;
-        if (dismissDistance >= threshold) {
-          root.hide();
-        } else {
-          root.swipeOffset = 0;
-          root.swipeOffsetY = 0;
-        }
-        return;
-      }
-      root.hide();
-    }
+                  if (mouse.button !== Qt.LeftButton)
+                  return;
+                  if (root.isSwiping) {
+                    root.isSwiping = false;
+                    const dismissDistance = root.useVerticalSwipe ? Math.abs(root.swipeOffsetY) : Math.abs(root.swipeOffset);
+                    const threshold = root.useVerticalSwipe ? root.verticalSwipeDismissThreshold : root.swipeDismissThreshold;
+                    if (dismissDistance >= threshold) {
+                      root.hide();
+                    } else {
+                      root.swipeOffset = 0;
+                      root.swipeOffsetY = 0;
+                    }
+                    return;
+                  }
+                  root.hide();
+                }
     onCanceled: {
       root.isSwiping = false;
       root.swipeOffset = 0;

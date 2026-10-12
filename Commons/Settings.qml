@@ -20,7 +20,7 @@
 //   data                         - Alias to the typed settings adapter tree
 //   settingsVersion              - Schema version for migration tracking
 //   configDir / cacheDir         - Resolved config and cache directories
-//   isDebug                      - True when AGNOCTURNAL_DEBUG=1
+//   isDebug                      - True when MORDIAL_DEBUG=1
 //   isLoaded                     - True after first successful load
 // =============================================================================
 
@@ -45,17 +45,17 @@ Singleton {
 
   /*
   Shell directories.
-  - Default config directory: ~/.config/agnocturnal
-  - Default cache directory: ~/.cache/agnocturnal
+  - Default config directory: ~/.config/mordial
+  - Default cache directory: ~/.cache/mordial
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
   readonly property int settingsVersion: 60
-  property bool isDebug: Quickshell.env("AGNOCTURNAL_DEBUG") === "1"
-  readonly property string shellName: "agnocturnal"
-  readonly property string configDir: ensureTrailingSlash(Quickshell.env("AGNOCTURNAL_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
-  readonly property string cacheDir: ensureTrailingSlash(Quickshell.env("AGNOCTURNAL_CACHE_DIR") || (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/" + shellName + "/")
+  property bool isDebug: Quickshell.env("MORDIAL_DEBUG") === "1"
+  readonly property string shellName: "mordial"
+  readonly property string configDir: ensureTrailingSlash(Quickshell.env("MORDIAL_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
+  readonly property string cacheDir: ensureTrailingSlash(Quickshell.env("MORDIAL_CACHE_DIR") || (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/" + shellName + "/")
 
-  readonly property string settingsFile: Quickshell.env("AGNOCTURNAL_SETTINGS_FILE") || (configDir + "settings.json")
+  readonly property string settingsFile: Quickshell.env("MORDIAL_SETTINGS_FILE") || (configDir + "settings.json")
   readonly property string defaultVideosDirectory: Quickshell.env("HOME") + "/Videos"
   readonly property string defaultWallpapersDirectory: Quickshell.env("HOME") + "/Pictures/Wallpapers"
 
@@ -82,7 +82,6 @@ Singleton {
     if (!directoriesCreated || settingsFileView.path === undefined) {
       return;
     }
-    externalReloadTimer.restart();
   }
 
   // -----------------------------------------------------
@@ -225,6 +224,8 @@ Singleton {
       property list<string> monitors: [] // holds bar visibility per monitor
       property string density: "default" // "compact", "default", "comfortable"
       property bool showOutline: false
+      property real outlineOpacity: 1.0
+      property string outlineColorKey: "primary"
       property bool showCapsule: true
       property real capsuleOpacity: 1.0
       property string capsuleColorKey: "none"
@@ -445,7 +446,6 @@ Singleton {
       property list<string> transitionType: ["fade", "disc", "stripes", "wipe", "pixelate", "honeycomb"]
       property bool skipStartupTransition: false
       property real transitionEdgeSmoothness: 0.05
-      property string panelPosition: "follow_bar"
       property bool hideWallpaperFilenames: false
       property bool useOriginalImages: false
       property real overviewBlur: 0.4
@@ -504,7 +504,23 @@ Singleton {
     property JsonObject dashboard: JsonObject {
       // Position: close_to_bar_button, center, top_left, top_right, bottom_left, bottom_right, bottom_center, top_center
       property string position: "close_to_bar_button"
+      // Fixed panel size in raw pixels. Deliberately not scaled by uiScaleRatio so the
+      // dashboard keeps a predictable footprint across UI zoom levels; SmartPanel clamps
+      // this to the available screen width/height, so oversize values degrade gracefully.
+      property int panelWidth: 1400
+      property int panelHeight: 700
       property string diskPath: "/"
+      // Blurred album art behind the dashboard media card
+      property JsonObject mediaBlur: JsonObject {
+        property bool enabled: true
+        // MultiEffect blur, 0.0-1.0
+        property real strength: 1.0
+      }
+      property JsonObject mediaCard: JsonObject {
+        // Frame drawn around the album artwork, in unscaled px. 0 = no frame.
+        property int frameWidth: 0
+        property string frameColor: "#ffffff"
+      }
       property JsonObject shortcuts
       shortcuts: JsonObject {
         property list<var> left: [
@@ -750,7 +766,7 @@ Singleton {
 
     property JsonObject colorSchemes: JsonObject {
       property bool useWallpaperColors: false
-      property string predefinedScheme: "Agnoctural (default)"
+      property string predefinedScheme: "Mordial (default)"
       property bool darkMode: true
       property string schedulingMode: "off"
       property string manualSunrise: "06:30"
@@ -799,12 +815,6 @@ Singleton {
       property string colorGeneration: ""
     }
 
-    // plugins
-    property JsonObject plugins: JsonObject {
-      property bool autoUpdate: false
-      property bool notifyUpdates: true
-    }
-
     // idle management
     property JsonObject idle: JsonObject {
       property bool enabled: false
@@ -829,6 +839,32 @@ Singleton {
       property bool gridSnapScale: false
       property list<var> monitorWidgets: []
       // Format: [{ "name": "DP-1", "widgets": [...] }, { "name": "HDMI-1", "widgets": [...] }]
+    }
+
+    // AI chat
+    property JsonObject aiChat: JsonObject {
+      property string activeProvider: "ollama"
+      property int maxHistoryLength: 100
+      property JsonObject ollama: JsonObject {
+        property string baseUrl: "http://localhost:11434"
+        property string model: ""
+        property real temperature: 0.7
+        property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+      }
+      property JsonObject lmstudio: JsonObject {
+        property string baseUrl: "http://localhost:1234/v1/chat/completions"
+        property string model: ""
+        property real temperature: 0.7
+        property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+      }
+      property JsonObject internetSearch: JsonObject {
+        property bool enabled: false
+        property string provider: "duckduckgo"
+        property int maxResults: 5
+        property string searxngUrl: ""
+        property bool searxngJsonMode: true
+        property bool followUpRephrase: true
+      }
     }
   }
 
@@ -947,7 +983,6 @@ Singleton {
         return i;
       }
     }
-    return -1;
   }
 
   // -----------------------------------------------------
@@ -1119,7 +1154,7 @@ Singleton {
 
       var defaultPath = Quickshell.shellDir + "/Assets/settings-default.json";
 
-      Quickshell.execDetached(["sh", "-c", `cat > "${defaultPath}" << 'AGNOCTURNAL_EOF'\n${jsonData}\nAGNOCTURAL_EOF`]);
+      Quickshell.execDetached(["sh", "-c", `cat > "${defaultPath}" << 'MORDIAL_EOF'\n${jsonData}\nMORDIAL_EOF`]);
     } catch (error) {
       Logger.e("Settings", "Failed to generate default settings file: " + error);
     }
@@ -1140,7 +1175,7 @@ Singleton {
 
       var defaultPath = Quickshell.shellDir + "/Assets/settings-widgets-default.json";
 
-      Quickshell.execDetached(["sh", "-c", `cat > "${defaultPath}" << 'AGNOCTURNAL_EOF'\n${jsonData}\nAGNOCTURAL_EOF`]);
+      Quickshell.execDetached(["sh", "-c", `cat > "${defaultPath}" << 'MORDIAL_EOF'\n${jsonData}\nMORDIAL_EOF`]);
     } catch (error) {
       Logger.e("Settings", "Failed to generate widget default settings file: " + error);
     }
@@ -1198,17 +1233,39 @@ Singleton {
         const widgets = adapter.bar.widgets[section];
         let renamed = false;
         const migrated = widgets.map(widget => {
-          if (widget.id === "ControlCenter") {
-            renamed = true;
-            return Object.assign({}, widget, {
-              id: "Dashboard"
-            });
-          }
-          return widget;
-        });
+                                       if (widget.id === "ControlCenter") {
+                                         renamed = true;
+                                         return Object.assign({}, widget, {
+                                                                id: "Dashboard"
+                                                              });
+                                       }
+                                       return widget;
+                                     });
         if (renamed) {
           adapter.bar.widgets[section] = migrated;
           Logger.i("Settings", `Migrated bar.${section} widget id 'ControlCenter' to 'Dashboard'`);
+        }
+      }
+    }
+
+    // v61: remove stale 'plugins' settings (plugin system removed)
+    if (raw.plugins !== undefined) {
+      delete raw.plugins;
+      Logger.i("Settings", "Removed stale 'plugins' settings section (plugin system removed)");
+    }
+
+    // v62: rebrand Agnoctural -> Mordial
+    // Migrate color scheme name
+    if (raw.colorSchemes && raw.colorSchemes.predefinedScheme === "Agnoctural (default)") {
+      adapter.colorSchemes.predefinedScheme = "Mordial (default)";
+      Logger.i("Settings", "Migrated color scheme name from 'Agnoctural (default)' to 'Mordial (default)'");
+    }
+    // Migrate dashboard shortcut widget id
+    if (raw.dashboard && raw.dashboard.shortcuts && raw.dashboard.shortcuts.left) {
+      for (var i = 0; i < raw.dashboard.shortcuts.left.length; i++) {
+        if (raw.dashboard.shortcuts.left[i].id === "AgnocturalPerformance") {
+          adapter.dashboard.shortcuts.left[i].id = "MordialPerformance";
+          Logger.i("Settings", "Migrated dashboard shortcut 'AgnocturalPerformance' to 'MordialPerformance'");
         }
       }
     }
@@ -1218,14 +1275,6 @@ Singleton {
   // If the settings structure has changed, ensure
   // backward compatibility by upgrading the settings
   function upgradeSettings() {
-    // Wait for PluginService to finish loading plugins first
-    // This prevents deleting plugin widgets during reload before plugins are registered
-    if (!PluginService.initialized || !PluginService.pluginsFullyLoaded) {
-      Logger.d("Settings", "Plugins not fully loaded yet, deferring upgrade");
-      Qt.callLater(upgradeSettings);
-      return;
-    }
-
     // Wait for BarWidgetRegistry to be ready
     if (!BarWidgetRegistry.widgets || Object.keys(BarWidgetRegistry.widgets).length === 0) {
       Logger.d("Settings", "BarWidgetRegistry not ready, deferring upgrade");

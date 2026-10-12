@@ -45,9 +45,9 @@ ColumnLayout {
     model: BatteryService.deviceModel
     currentKey: root.valueDeviceNativePath
     onSelected: key => {
-      root.valueDeviceNativePath = key;
-      saveSettings();
-    }
+                  root.valueDeviceNativePath = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.deviceNativePath
   }
 
@@ -80,9 +80,9 @@ ColumnLayout {
     ]
     currentKey: root.valueDisplayMode
     onSelected: key => {
-      root.valueDisplayMode = key;
-      saveSettings();
-    }
+                  root.valueDisplayMode = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.displayMode
   }
 
@@ -91,9 +91,9 @@ ColumnLayout {
     description: "Hide the widget when no battery is detected on the system."
     checked: valueHideIfNotDetected
     onToggled: checked => {
-      valueHideIfNotDetected = checked;
-      saveSettings();
-    }
+                 valueHideIfNotDetected = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideIfNotDetected
   }
 
@@ -102,9 +102,9 @@ ColumnLayout {
     description: "Hide the widget when the battery is not charging or discharging."
     checked: valueHideIfIdle
     onToggled: checked => {
-      valueHideIfIdle = checked;
-      saveSettings();
-    }
+                 valueHideIfIdle = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideIfIdle
   }
 
@@ -117,9 +117,9 @@ ColumnLayout {
     description: "Display the power profile selection inside the battery panel."
     checked: valueShowPowerProfiles
     onToggled: checked => {
-      valueShowPowerProfiles = checked;
-      saveSettings();
-    }
+                 valueShowPowerProfiles = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showPowerProfiles
   }
 }

@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Commons
-import qs.Services.Agnocturnal
+import qs.Services.Mordial
 import qs.Services.UI
 
 Singleton {
@@ -16,7 +16,7 @@ Singleton {
   readonly property string developmentSuffix: "-git"
   readonly property string currentVersion: `v${!isDevelopment ? baseVersion : baseVersion + developmentSuffix}`
 
-  readonly property string discordUrl: "https://discord.noctalia.dev"
+  readonly property string discordUrl: "https://github.com/SUDOER1337/mordial-shell"
 
   property bool initialized: false
 

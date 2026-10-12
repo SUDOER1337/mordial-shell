@@ -37,9 +37,9 @@ ColumnLayout {
     description: "Display a badge showing the number of unread notifications."
     checked: valueShowUnreadBadge
     onToggled: checked => {
-      valueShowUnreadBadge = checked;
-      saveSettings();
-    }
+                 valueShowUnreadBadge = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showUnreadBadge
   }
 
@@ -47,9 +47,9 @@ ColumnLayout {
     label: "Select icon color"
     currentKey: valueIconColor
     onSelected: key => {
-      valueIconColor = key;
-      saveSettings();
-    }
+                  valueIconColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.iconColor
   }
 
@@ -58,9 +58,9 @@ ColumnLayout {
     description: "Select the color for the unread notification badge."
     currentKey: valueUnreadBadgeColor
     onSelected: key => {
-      valueUnreadBadgeColor = key;
-      saveSettings();
-    }
+                  valueUnreadBadgeColor = key;
+                  saveSettings();
+                }
     visible: valueShowUnreadBadge
     defaultValue: widgetMetadata.unreadBadgeColor
   }
@@ -70,9 +70,9 @@ ColumnLayout {
     description: "Hide the notification icon when there are no notifications."
     checked: valueHideWhenZero
     onToggled: checked => {
-      valueHideWhenZero = checked;
-      saveSettings();
-    }
+                 valueHideWhenZero = checked;
+                 saveSettings();
+               }
     enabled: !valueHideWhenZeroUnread
     defaultValue: widgetMetadata.hideWhenZero
   }
@@ -82,9 +82,9 @@ ColumnLayout {
     description: "Hide the notification icon when there are no unread notifications."
     checked: valueHideWhenZeroUnread
     onToggled: checked => {
-      valueHideWhenZeroUnread = checked;
-      saveSettings();
-    }
+                 valueHideWhenZeroUnread = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.hideWhenZeroUnread
   }
 }

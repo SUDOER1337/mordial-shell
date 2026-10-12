@@ -70,7 +70,7 @@ let
   ];
 in
 stdenvNoCC.mkDerivation {
-  pname = "agnoctural-shell";
+  pname = "mordial-shell";
   inherit version src;
 
   nativeBuildInputs = [
@@ -83,24 +83,24 @@ stdenvNoCC.mkDerivation {
   ];
 
   installPhase = ''
-    mkdir -p $out/share/agnoctural-shell $out/bin
-    cp -r . $out/share/agnoctural-shell
-    ln -s ${quickshell}/bin/qs $out/bin/agnoctural-shell
+    mkdir -p $out/share/mordial-shell $out/bin
+    cp -r . $out/share/mordial-shell
+    ln -s ${quickshell}/bin/qs $out/bin/mordial-shell
   '';
 
   preFixup = ''
     qtWrapperArgs+=(
       --prefix PATH : ${lib.makeBinPath (runtimeDeps ++ extraPackages)}
       --prefix XDG_DATA_DIRS : ${wayland-scanner}/share
-      --set-default QS_CONFIG_PATH "$out/share/agnoctural-shell"
+      --set-default QS_CONFIG_PATH "$out/share/mordial-shell"
       ${lib.optionalString calendarSupport "--prefix GI_TYPELIB_PATH : ${giTypelibPath}"}
     )
   '';
 
   meta = {
     description = "A sleek and minimal desktop shell thoughtfully crafted for Wayland, built with Quickshell.";
-    homepage = "https://github.com/SUDOER1337/agnocturnal-shell";
+    homepage = "https://github.com/SUDOER1337/mordial-shell";
     license = lib.licenses.mit;
-    mainProgram = "agnoctural-shell";
+    mainProgram = "mordial-shell";
   };
 }

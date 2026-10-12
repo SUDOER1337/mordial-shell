@@ -59,57 +59,57 @@ SmartPanel {
     }
 
     Keys.onPressed: event => {
-      // Tab navigation for categories
-      if (event.key === Qt.Key_Tab) {
-        currentRange = (currentRange + 1) % 4;
-        event.accepted = true;
-        return;
-      }
+                      // Tab navigation for categories
+                      if (event.key === Qt.Key_Tab) {
+                        currentRange = (currentRange + 1) % 4;
+                        event.accepted = true;
+                        return;
+                      }
 
-      if (event.key === Qt.Key_Backtab) { // Shift+Tab
-        currentRange = (currentRange - 1 + 4) % 4;
-        event.accepted = true;
-        return;
-      }
+                      if (event.key === Qt.Key_Backtab) { // Shift+Tab
+                        currentRange = (currentRange - 1 + 4) % 4;
+                        event.accepted = true;
+                        return;
+                      }
 
-      // Navigation Up/Down
-      if (checkKey(event, 'up')) {
-        moveSelection(-1);
-        event.accepted = true;
-        return;
-      }
-      if (checkKey(event, 'down')) {
-        moveSelection(1);
-        event.accepted = true;
-        return;
-      }
+                      // Navigation Up/Down
+                      if (checkKey(event, 'up')) {
+                        moveSelection(-1);
+                        event.accepted = true;
+                        return;
+                      }
+                      if (checkKey(event, 'down')) {
+                        moveSelection(1);
+                        event.accepted = true;
+                        return;
+                      }
 
-      // Action Navigation Left/Right
-      if (checkKey(event, 'left')) {
-        moveAction(-1);
-        event.accepted = true;
-        return;
-      }
-      if (checkKey(event, 'right')) {
-        moveAction(1);
-        event.accepted = true;
-        return;
-      }
+                      // Action Navigation Left/Right
+                      if (checkKey(event, 'left')) {
+                        moveAction(-1);
+                        event.accepted = true;
+                        return;
+                      }
+                      if (checkKey(event, 'right')) {
+                        moveAction(1);
+                        event.accepted = true;
+                        return;
+                      }
 
-      // Activation (Enter)
-      if (checkKey(event, 'enter')) {
-        activateSelection();
-        event.accepted = true;
-        return;
-      }
+                      // Activation (Enter)
+                      if (checkKey(event, 'enter')) {
+                        activateSelection();
+                        event.accepted = true;
+                        return;
+                      }
 
-      // Removal (Delete/Remove)
-      if (checkKey(event, 'remove') || event.key === Qt.Key_Delete) {
-        removeSelection();
-        event.accepted = true;
-        return;
-      }
-    }
+                      // Removal (Delete/Remove)
+                      if (checkKey(event, 'remove') || event.key === Qt.Key_Delete) {
+                        removeSelection();
+                        event.accepted = true;
+                        return;
+                      }
+                    }
 
     function parseActions(actions) {
       try {
@@ -514,7 +514,8 @@ SmartPanel {
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           reserveScrollbarSpace: false
-          gradientColor: Color.mBackground
+          // The row's own fill, so the fade blends into it instead of a stale token.
+          gradientColor: Qt.alpha(Color.mSurfaceContainer, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
 
           // Track which notification is expanded
           property string expandedId: ""
@@ -578,7 +579,9 @@ SmartPanel {
               Column {
                 id: notificationColumn
                 width: panelContent.layoutWidth
-                spacing: Style.marginM
+                // Rows inset their card by Style.cardShadowPadding; cancelling that
+                // here reproduces the popup's marginM gap between the visible cards.
+                spacing: -Style.cardShadowPadding * 2 + Style.marginM
 
                 Repeater {
                   model: NotificationService.historyModel

@@ -21,12 +21,10 @@ import qs.Modules.Panels.Dock
 import qs.Modules.Panels.Launcher
 import qs.Modules.Panels.Network
 import qs.Modules.Panels.NotificationHistory
-import qs.Modules.Panels.Plugins
 import qs.Modules.Panels.SessionMenu
 import qs.Modules.Panels.Settings
 import qs.Modules.Panels.SystemStats
 import qs.Modules.Panels.Tray
-import qs.Modules.Panels.Wallpaper
 import qs.Services.Power
 import qs.Services.UI
 
@@ -278,10 +276,10 @@ PanelWindow {
       enabled: root.isAnyPanelOpen
       acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
       onClicked: mouse => {
-        if (PanelService.openedPanel) {
-          PanelService.openedPanel.close();
-        }
-      }
+                   if (PanelService.openedPanel) {
+                     PanelService.openedPanel.close();
+                   }
+                 }
       z: 0 // Behind panels and bar
     }
 
@@ -354,12 +352,6 @@ PanelWindow {
       screen: root.screen
     }
 
-    WallpaperPanel {
-      id: wallpaperPanel
-      objectName: "wallpaperPanel-" + (root.screen?.name || "unknown")
-      screen: root.screen
-    }
-
     NetworkPanel {
       id: networkPanel
       objectName: "networkPanel-" + (root.screen?.name || "unknown")
@@ -383,23 +375,6 @@ PanelWindow {
       id: settingsPanel
       objectName: "settingsPanel-" + (root.screen?.name || "unknown")
       screen: root.screen
-    }
-
-    // ----------------------------------------------
-    // Plugin panel slots
-    // ----------------------------------------------
-    PluginPanelSlot {
-      id: pluginPanel1
-      objectName: "pluginPanel1-" + (root.screen?.name || "unknown")
-      screen: root.screen
-      slotNumber: 1
-    }
-
-    PluginPanelSlot {
-      id: pluginPanel2
-      objectName: "pluginPanel2-" + (root.screen?.name || "unknown")
-      screen: root.screen
-      slotNumber: 2
     }
 
     // ----------------------------------------------

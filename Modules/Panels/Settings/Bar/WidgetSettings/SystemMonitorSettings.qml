@@ -71,9 +71,9 @@ ColumnLayout {
     description: "Display stats as mini bar charts instead of text values. Prevents layout shifting."
     checked: valueCompactMode
     onToggled: checked => {
-      valueCompactMode = checked;
-      saveSettings();
-    }
+                 valueCompactMode = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.compactMode
   }
 
@@ -81,18 +81,18 @@ ColumnLayout {
     label: "Select icon color"
     currentKey: valueIconColor
     onSelected: key => {
-      valueIconColor = key;
-      saveSettings();
-    }
+                  valueIconColor = key;
+                  saveSettings();
+                }
     defaultValue: widgetMetadata.iconColor
   }
 
   NColorChoice {
     currentKey: valueTextColor
     onSelected: key => {
-      valueTextColor = key;
-      saveSettings();
-    }
+                  valueTextColor = key;
+                  saveSettings();
+                }
     visible: !valueCompactMode
     defaultValue: widgetMetadata.textColor
   }
@@ -103,9 +103,9 @@ ColumnLayout {
     description: "Use monospace font for consistent character width."
     checked: valueUseMonospaceFont
     onToggled: checked => {
-      valueUseMonospaceFont = checked;
-      saveSettings();
-    }
+                 valueUseMonospaceFont = checked;
+                 saveSettings();
+               }
     visible: !valueCompactMode
     defaultValue: widgetMetadata.useMonospaceFont
   }
@@ -116,9 +116,9 @@ ColumnLayout {
     description: isVerticalBar ? "Vertical taskbar does not support padding text." : !valueUseMonospaceFont ? "A monospace font is needed for this feature." : "Pads the text values with leading spaces to prevent layout shifting."
     checked: valueUsePadding && !isVerticalBar && valueUseMonospaceFont
     onToggled: checked => {
-      valueUsePadding = checked;
-      saveSettings();
-    }
+                 valueUsePadding = checked;
+                 saveSettings();
+               }
     visible: !valueCompactMode
     enabled: !isVerticalBar && valueUseMonospaceFont
     defaultValue: widgetMetadata.usePadding
@@ -135,9 +135,9 @@ ColumnLayout {
     description: "Display current CPU usage percentage."
     checked: valueShowCpuUsage
     onToggled: checked => {
-      valueShowCpuUsage = checked;
-      saveSettings();
-    }
+                 valueShowCpuUsage = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showCpuUsage
   }
 
@@ -148,9 +148,9 @@ ColumnLayout {
     description: "Display CPU cores usage individually."
     checked: valueShowCpuCores
     onToggled: checked => {
-      valueShowCpuCores = checked;
-      saveSettings();
-    }
+                 valueShowCpuCores = checked;
+                 saveSettings();
+               }
     visible: valueCompactMode
   }
 
@@ -161,9 +161,9 @@ ColumnLayout {
     description: "Display the current CPU clock speed in GHz."
     checked: valueShowCpuFreq
     onToggled: checked => {
-      valueShowCpuFreq = checked;
-      saveSettings();
-    }
+                 valueShowCpuFreq = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showCpuFreq
   }
 
@@ -174,9 +174,9 @@ ColumnLayout {
     description: "Show CPU temperature readings if available."
     checked: valueShowCpuTemp
     onToggled: checked => {
-      valueShowCpuTemp = checked;
-      saveSettings();
-    }
+                 valueShowCpuTemp = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showCpuTemp
   }
 
@@ -187,9 +187,9 @@ ColumnLayout {
     description: "Display system load average."
     checked: valueShowLoadAverage
     onToggled: checked => {
-      valueShowLoadAverage = checked;
-      saveSettings();
-    }
+                 valueShowLoadAverage = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showLoadAverage
   }
 
@@ -200,9 +200,9 @@ ColumnLayout {
     description: "Show GPU temperature readings if available."
     checked: valueShowGpuTemp
     onToggled: checked => {
-      valueShowGpuTemp = checked;
-      saveSettings();
-    }
+                 valueShowGpuTemp = checked;
+                 saveSettings();
+               }
     visible: SystemStatService.gpuAvailable
     defaultValue: widgetMetadata.showGpuTemp
   }
@@ -214,9 +214,9 @@ ColumnLayout {
     description: "Display current RAM usage information."
     checked: valueShowMemoryUsage
     onToggled: checked => {
-      valueShowMemoryUsage = checked;
-      saveSettings();
-    }
+                 valueShowMemoryUsage = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showMemoryUsage
   }
 
@@ -227,9 +227,9 @@ ColumnLayout {
     description: "Show memory usage as a percentage instead of absolute values."
     checked: valueShowMemoryAsPercent
     onToggled: checked => {
-      valueShowMemoryAsPercent = checked;
-      saveSettings();
-    }
+                 valueShowMemoryAsPercent = checked;
+                 saveSettings();
+               }
     visible: valueShowMemoryUsage
     defaultValue: widgetMetadata.showMemoryAsPercent
   }
@@ -241,9 +241,9 @@ ColumnLayout {
     description: "Show swap memory usage."
     checked: valueShowSwapUsage
     onToggled: checked => {
-      valueShowSwapUsage = checked;
-      saveSettings();
-    }
+                 valueShowSwapUsage = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showSwapUsage
   }
 
@@ -254,9 +254,9 @@ ColumnLayout {
     description: "Display network upload and download speeds."
     checked: valueShowNetworkStats
     onToggled: checked => {
-      valueShowNetworkStats = checked;
-      saveSettings();
-    }
+                 valueShowNetworkStats = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showNetworkStats
   }
 
@@ -271,9 +271,9 @@ ColumnLayout {
     description: "Show disk space usage information."
     checked: valueShowDiskUsage
     onToggled: checked => {
-      valueShowDiskUsage = checked;
-      saveSettings();
-    }
+                 valueShowDiskUsage = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showDiskUsage
   }
 
@@ -284,9 +284,9 @@ ColumnLayout {
     description: "Show disk space as percentage instead of absolute values."
     checked: valueShowDiskUsageAsPercent
     onToggled: checked => {
-      valueShowDiskUsageAsPercent = checked;
-      saveSettings();
-    }
+                 valueShowDiskUsageAsPercent = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showDiskUsageAsPercent
   }
 
@@ -297,9 +297,9 @@ ColumnLayout {
     description: "Shows how much disk space is available instead of how much is used."
     checked: valueShowDiskAvailable
     onToggled: checked => {
-      valueShowDiskAvailable = checked;
-      saveSettings();
-    }
+                 valueShowDiskAvailable = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showDiskAvailable
   }
 
@@ -311,15 +311,15 @@ ColumnLayout {
     model: {
       const paths = Object.keys(SystemStatService.diskPercents).sort();
       return paths.map(path => ({
-        key: path,
-        name: path
-      }));
+                                  key: path,
+                                  name: path
+                                }));
     }
-      currentKey: valueDiskPath
-      onSelected: key => {
-      valueDiskPath = key;
-      saveSettings();
-    }
-      defaultValue: widgetMetadata.diskPath
-    }
-    }
+    currentKey: valueDiskPath
+    onSelected: key => {
+                  valueDiskPath = key;
+                  saveSettings();
+                }
+    defaultValue: widgetMetadata.diskPath
+  }
+}

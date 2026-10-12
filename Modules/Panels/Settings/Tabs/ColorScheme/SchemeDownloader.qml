@@ -643,11 +643,11 @@ Popup {
 
         // If the deleted scheme was the active one, reset to default BEFORE reloading
         if (needsReset) {
-          Logger.i("ColorSchemeDownload", "Deleted scheme was active, resetting to Agnoctural (default)");
+          Logger.i("ColorSchemeDownload", "Deleted scheme was active, resetting to Mordial (default)");
           // Clear the setting immediately so ColorSchemeService won't try to apply the deleted scheme
-          Settings.data.colorSchemes.predefinedScheme = "Agnoctural (default)";
+          Settings.data.colorSchemes.predefinedScheme = "Mordial (default)";
           // Apply the default scheme immediately
-          ColorSchemeService.setPredefinedScheme("Agnoctural (default)");
+          ColorSchemeService.setPredefinedScheme("Mordial (default)");
         }
 
         // Reload color schemes

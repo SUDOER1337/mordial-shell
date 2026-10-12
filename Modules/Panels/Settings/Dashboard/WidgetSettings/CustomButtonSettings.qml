@@ -152,9 +152,9 @@ ColumnLayout {
     description: "Show tooltips with command details (left/right/middle click, wheel)."
     checked: _settings.showExecTooltip
     onToggled: checked => {
-      _settings.showExecTooltip = checked;
-      saveSettings();
-    }
+                 _settings.showExecTooltip = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.showExecTooltip
   }
 
@@ -206,9 +206,9 @@ ColumnLayout {
     description: "Enable a second icon and 'hot' state based on a check command."
     checked: _settings.enableOnStateLogic
     onToggled: checked => {
-      _settings.enableOnStateLogic = checked;
-      saveSettings();
-    }
+                 _settings.enableOnStateLogic = checked;
+                 saveSettings();
+               }
     defaultValue: widgetMetadata.enableOnStateLogic
   }
 
