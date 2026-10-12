@@ -18,6 +18,8 @@
   # build
   qt6,
   quickshell,
+  # GL/EGL provider — must match the shell's runtime glibc, see preFixup below
+  mesa,
   # runtime deps
   brightnessctl,
   cliphist,
@@ -80,6 +82,9 @@ stdenvNoCC.mkDerivation {
   buildInputs = [
     qt6.qtbase
     qt6.qtmultimedia
+    # Referenced by the wrapper below so libglvnd loads THIS mesa, not the
+    # system one (see preFixup).
+    mesa
   ];
 
   installPhase = ''
@@ -93,6 +98,15 @@ stdenvNoCC.mkDerivation {
       --prefix PATH : ${lib.makeBinPath (runtimeDeps ++ extraPackages)}
       --prefix XDG_DATA_DIRS : ${wayland-scanner}/share
       --set-default QS_CONFIG_PATH "$out/share/mordial-shell"
+      # Force libglvnd to use the mesa bundled from THIS flake's pinned nixpkgs
+      # instead of /run/opengl-driver's. Both libglvnds carry the same default
+      # vendor dir (/run/opengl-driver/share/glvnd/egl_vendor.d), but this
+      # shell's runtime is glibc 2.42 while the system mesa (26.2.4) is built
+      # against glibc 2.44 and its libgallium needs GLIBC_2.43 — so loading the
+      # system vendor fails ("EGL not available" -> no GL context -> the shell
+      # renders nothing and the lock screen SIGABRTs). The pinned mesa
+      # (26.1.0) needs only GLIBC_2.38 and loads fine here.
+      --set __EGL_VENDOR_LIBRARY_FILENAMES "${mesa}/share/glvnd/egl_vendor.d/50_mesa.json"
       ${lib.optionalString calendarSupport "--prefix GI_TYPELIB_PATH : ${giTypelibPath}"}
     )
   '';
