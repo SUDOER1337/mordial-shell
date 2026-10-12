@@ -32,7 +32,6 @@ import Quickshell.Io
 import "../Helpers/QtObj2JS.js" as QtObj2JS
 import qs.Commons
 import qs.Modules.OSD
-import qs.Services.Agnocturnal
 import qs.Services.UI
 
 Singleton {
