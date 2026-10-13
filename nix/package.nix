@@ -20,6 +20,9 @@
   quickshell,
   # GL/EGL provider — must match the shell's runtime glibc, see preFixup below
   mesa,
+  # PAM provider — must match the shell's runtime glibc, see preFixup below.
+  # quickshell already links this exact build (linux-pam 1.7.1, needs GLIBC_2.38).
+  linux-pam,
   # runtime deps
   brightnessctl,
   cliphist,
@@ -85,12 +88,24 @@ stdenvNoCC.mkDerivation {
     # Referenced by the wrapper below so libglvnd loads THIS mesa, not the
     # system one (see preFixup).
     mesa
+    # Referenced by the bundled pam.d/mordial stack (see installPhase).
+    linux-pam
   ];
 
   installPhase = ''
-    mkdir -p $out/share/mordial-shell $out/bin
+    mkdir -p $out/share/mordial-shell/pam.d $out/bin
     cp -r . $out/share/mordial-shell
     ln -s ${quickshell}/bin/qs $out/bin/mordial-shell
+
+    # Ship a PAM stack built against THIS flake's glibc instead of the system
+    # /etc/pam.d one. The shell's qs binary runs on the pinned glibc 2.42 while
+    # the system's pam_unix.so is built against glibc 2.43, so dlopen of the
+    # system module fails ("version `GLIBC_2.43' not found") and every password
+    # is rejected. This linux-pam is the same build quickshell links (1.7.1,
+    # needs GLIBC_2.38) and its pam_unix uses the system setuid helper
+    # /run/wrappers/bin/unix_chkpwd for /etc/shadow access.
+    printf 'auth required %s/lib/security/pam_unix.so\naccount required %s/lib/security/pam_unix.so\n' \
+      '${linux-pam}' '${linux-pam}' > $out/share/mordial-shell/pam.d/mordial
   '';
 
   preFixup = ''
@@ -107,6 +122,10 @@ stdenvNoCC.mkDerivation {
       # renders nothing and the lock screen SIGABRTs). The pinned mesa
       # (26.1.0) needs only GLIBC_2.38 and loads fine here.
       --set __EGL_VENDOR_LIBRARY_FILENAMES "${mesa}/share/glvnd/egl_vendor.d/50_mesa.json"
+      # Point the lock screen at the bundled PAM stack (see installPhase) rather
+      # than /etc/pam.d, whose modules cannot load under this glibc.
+      --set-default MORDIAL_PAM_SERVICE "mordial"
+      --set-default MORDIAL_PAM_CONFIG_DIR "$out/share/mordial-shell/pam.d"
       ${lib.optionalString calendarSupport "--prefix GI_TYPELIB_PATH : ${giTypelibPath}"}
     )
   '';

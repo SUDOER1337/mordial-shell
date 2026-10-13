@@ -18,13 +18,13 @@ Scope {
   property string errorMessage: ""
   property string infoMessage: ""
 
-  readonly property string pamConfigDirectory: "/etc/pam.d"
+  readonly property string pamConfigDirectory: Quickshell.env("MORDIAL_PAM_CONFIG_DIR") || "/etc/pam.d"
   property string pamConfig: Quickshell.env("MORDIAL_PAM_SERVICE") || "login"
   property bool pamReady: false
 
   Component.onCompleted: {
     if (Quickshell.env("MORDIAL_PAM_SERVICE")) {
-      Logger.i("LockContext", "MORDIAL_PAM_SERVICE is set, using system PAM config: /etc/pam.d/" + pamConfig);
+      Logger.i("LockContext", "MORDIAL_PAM_SERVICE is set, using PAM config: " + pamConfigDirectory + "/" + pamConfig);
       pamReady = true;
     } else {
       Logger.i("LockContext", "Probing for best PAM service...");
