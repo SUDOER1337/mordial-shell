@@ -1,4 +1,10 @@
+<div align="center">
+
+<img src="Assets/mordial.svg" alt="Mordial Shell logo" width="120" />
+
 # Mordial Shell
+
+</div>
 
 > Independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) v4. Noctalia is now v5 (C++), so this fork maintains the original QML-based shell for continued use.
 
