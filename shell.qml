@@ -27,6 +27,7 @@ import qs.Modules.OSD
 
 import qs.Modules.Panels.Launcher
 import qs.Modules.Panels.Settings
+import qs.Modules.Panels.WindowSwitcher
 import qs.Modules.Toast
 import qs.Services.Control
 import qs.Services.Hardware
@@ -129,6 +130,9 @@ ShellRoot {
           LauncherOverlayWindow {}
         }
       }
+
+      // Alt-Tab style window switcher overlay
+      WindowSwitcherOverlayWindow {}
 
       LockScreen {}
       FadeOverlay {}

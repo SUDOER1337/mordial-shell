@@ -409,6 +409,26 @@ Singleton {
   }
 
   IpcHandler {
+    target: "switcher"
+
+    // Alt-Tab flow: hold Alt, tap Tab (next) / Shift+Tab (previous); the
+    // commit rides on Tab release because MangoWC can only fire a release bind
+    // for the last key pressed. MangoWC drives these; see WindowSwitcherService.
+    function next() {
+      WindowSwitcherService.next();
+    }
+    function previous() {
+      WindowSwitcherService.previous();
+    }
+    function commit() {
+      WindowSwitcherService.commit();
+    }
+    function cancel() {
+      WindowSwitcherService.cancel();
+    }
+  }
+
+  IpcHandler {
     target: "lockScreen"
 
     // New preferred method - lock the screen

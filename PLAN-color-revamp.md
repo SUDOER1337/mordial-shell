@@ -3,7 +3,7 @@
 ## Goals
 
 - **Auto-color from wallpaper** via existing MD3 Python pipeline (keep & refine)
-- **7 semantic slots** with per-category saturation sliders (instant QML-side post-process)
+- **7 semantic slots** with per-category saturation sliders (instant QML-side post-process, this shoulds replace every dots color selector to a dropdowns)
 - **Deep MD3 variants** per slot (main, on-color, container, on-container)
 - **Modular API** consumers bind to (`Color.mPrimary`, `Color.primaryContainer`, etc.)
 - **Full backward compatibility** with existing `m*` property names (~1445 usages)
@@ -12,15 +12,15 @@
 
 ## 1. Semantic Slots & Variant Map
 
-| Slot | Main | On-Color | Container | On-Container | Children / Notes |
-|------|------|----------|-----------|--------------|-----------------|
-| **Primary** | `mPrimary` | `mOnPrimary` | `mPrimaryContainer` | `mOnPrimaryContainer` | Accent color, interactive elements |
-| **Secondary** | `mSecondary` | `mOnSecondary` | `mSecondaryContainer` | `mOnSecondaryContainer` | Muted accent |
-| **Tertiary** | `mTertiary` | `mOnTertiary` | `mTertiaryContainer` | `mOnTertiaryContainer` | Playful accent |
-| **Surface** | `mSurface` | `mOnSurface` | `mSurfaceContainer`<br>`mSurfaceContainerLow`<br>`mSurfaceContainerHigh` | `mOnSurfaceVariant` | Background panels, cards |
-| **Background** | `mBackground` | `mOnBackground` | `mSurfaceVariant` | *(shared with Surface)* | Root background |
-| **Error** | `mError` | `mOnError` | `mErrorContainer` | `mOnErrorContainer` | Destructive / alerts |
-| **Outline** | `mOutline` | — | `mOutlineVariant` | — | Borders, dividers |
+| Slot           | Main          | On-Color        | Container                                                                | On-Container            | Children / Notes                   |
+| -------------- | ------------- | --------------- | ------------------------------------------------------------------------ | ----------------------- | ---------------------------------- |
+| **Primary**    | `mPrimary`    | `mOnPrimary`    | `mPrimaryContainer`                                                      | `mOnPrimaryContainer`   | Accent color, interactive elements |
+| **Secondary**  | `mSecondary`  | `mOnSecondary`  | `mSecondaryContainer`                                                    | `mOnSecondaryContainer` | Muted accent                       |
+| **Tertiary**   | `mTertiary`   | `mOnTertiary`   | `mTertiaryContainer`                                                     | `mOnTertiaryContainer`  | Playful accent                     |
+| **Surface**    | `mSurface`    | `mOnSurface`    | `mSurfaceContainer`<br>`mSurfaceContainerLow`<br>`mSurfaceContainerHigh` | `mOnSurfaceVariant`     | Background panels, cards           |
+| **Background** | `mBackground` | `mOnBackground` | `mSurfaceVariant`                                                        | _(shared with Surface)_ | Root background                    |
+| **Error**      | `mError`      | `mOnError`      | `mErrorContainer`                                                        | `mOnErrorContainer`     | Destructive / alerts               |
+| **Outline**    | `mOutline`    | —               | `mOutlineVariant`                                                        | —                       | Borders, dividers                  |
 
 ~30 color tokens total. Backward-compatible aliases preserved for all 14 current names.
 
@@ -57,12 +57,14 @@ Stored in `settings.json` under `colorSchemes.saturation`:
 ### 3.1 New file: `Commons/ColorSaturation.qml` (Singleton)
 
 **Responsibilities:**
+
 - Read saturation config from `Settings.data.colorSchemes.saturation`
 - Expose a read-write `property real saturationPrimary` (and friends) for each slot
 - Each property emits `onSaturationPrimaryChanged` so Color.qml can re-bind
 - Provide `function applySaturationToToken(baseColorHex, slotName) → color`
 
 **Internal logic for `applySaturationToToken`:**
+
 ```
 1. Receive raw hex + slot name (e.g. "#ffaabb", "primary")
 2. Convert hex → HSL via ColorsConvert.hexToHSL()
@@ -72,6 +74,7 @@ Stored in `settings.json` under `colorSchemes.saturation`:
 ```
 
 **Performance notes:**
+
 - Called once per token per saturation change (max ~30 conversions)
 - JS conversion is <0.01ms per call — instant for UI
 - No Python round-trip, no file I/O
@@ -79,6 +82,7 @@ Stored in `settings.json` under `colorSchemes.saturation`:
 ### 3.2 Extend: `Helpers/ColorsConvert.js`
 
 Add:
+
 ```js
 /** Apply a saturation multiplier to a hex color.
  *  @param hex - 6-char hex string (with or without #)
@@ -144,7 +148,7 @@ QtObject {
 ### 4.3 Animation
 
 - Keep existing `Behavior on mPrimary { ColorAnimation { duration: Style.animationSlowest } }`
-- Animation fires when the *adjusted* color changes (whether from raw palette change or slider move)
+- Animation fires when the _adjusted_ color changes (whether from raw palette change or slider move)
 - Skip on first load via `skipTransition` flag (preserved from current code)
 
 ---
@@ -176,6 +180,7 @@ Settings tab with one `NSaturationSlider` per slot:
 ### 5.3 Update: `ColorSchemeTab.qml`
 
 Add a third sub-tab alongside "Colors" and "Templates":
+
 - Existing: `ColorsSubTab`, `TemplatesSubTab`
 - New: `SaturationSubTab`
 
@@ -211,17 +216,17 @@ UI updates (animated)
 
 ## 7. Implementation Order
 
-| Step | File(s) | Description |
-|------|---------|-------------|
-| 1 | `Helpers/ColorsConvert.js` | Add `applySaturation()` JS function |
-| 2 | `Commons/ColorSaturation.qml` | NEW: saturation config singleton |
-| 3 | `Commons/Color.qml` | Rewrite: 30 tokens, post-process layer, backward compat |
-| 4 | `Widgets/NSaturationSlider.qml` | NEW: saturation slider widget |
-| 5 | `Modules/.../SaturationSubTab.qml` | NEW: settings tab with 7 sliders |
-| 6 | `Modules/.../ColorSchemeTab.qml` | Add Saturation sub-tab |
-| 7 | `Assets/settings-default.json` | Add default saturation values |
-| 8 | `Services/Theming/ColorSchemeService.qml` | Wire saturation into scheme loading |
-| 9 | Test: `qs -c ~/.config/quickshell/mordial-shell/` | Verify no regressions |
+| Step | File(s)                                           | Description                                             |
+| ---- | ------------------------------------------------- | ------------------------------------------------------- |
+| 1    | `Helpers/ColorsConvert.js`                        | Add `applySaturation()` JS function                     |
+| 2    | `Commons/ColorSaturation.qml`                     | NEW: saturation config singleton                        |
+| 3    | `Commons/Color.qml`                               | Rewrite: 30 tokens, post-process layer, backward compat |
+| 4    | `Widgets/NSaturationSlider.qml`                   | NEW: saturation slider widget                           |
+| 5    | `Modules/.../SaturationSubTab.qml`                | NEW: settings tab with 7 sliders                        |
+| 6    | `Modules/.../ColorSchemeTab.qml`                  | Add Saturation sub-tab                                  |
+| 7    | `Assets/settings-default.json`                    | Add default saturation values                           |
+| 8    | `Services/Theming/ColorSchemeService.qml`         | Wire saturation into scheme loading                     |
+| 9    | Test: `qs -c ~/.config/quickshell/mordial-shell/` | Verify no regressions                                   |
 
 ---
 
@@ -236,23 +241,23 @@ UI updates (animated)
 
 ## 9. Appendix: Property Name Migration
 
-| Old (current) | New (kept as alias) | Also added |
-|---------------|---------------------|------------|
-| `mPrimary` | `mPrimary` | `mPrimaryContainer`, `mOnPrimaryContainer` |
-| `mOnPrimary` | `mOnPrimary` | |
-| `mSecondary` | `mSecondary` | `mSecondaryContainer`, `mOnSecondaryContainer` |
-| `mOnSecondary` | `mOnSecondary` | |
-| `mTertiary` | `mTertiary` | `mTertiaryContainer`, `mOnTertiaryContainer` |
-| `mOnTertiary` | `mOnTertiary` | |
-| `mSurface` | `mSurface` | `mSurfaceContainerLow`, `mSurfaceContainer`, `mSurfaceContainerHigh` |
-| `mOnSurface` | `mOnSurface` | |
-| `mSurfaceVariant` | `mSurfaceVariant` | |
-| `mOnSurfaceVariant` | `mOnSurfaceVariant` | |
-| `mError` | `mError` | `mErrorContainer`, `mOnErrorContainer` |
-| `mOnError` | `mOnError` | |
-| `mOutline` | `mOutline` | `mOutlineVariant` |
-| `mShadow` | `mShadow` | Kept as-is |
-| `mHover` | `mHover` | Kept as-is |
-| `mOnHover` | `mOnHover` | Kept as-is |
-| — | `mBackground` | NEW |
-| — | `mOnBackground` | NEW |
+| Old (current)       | New (kept as alias) | Also added                                                           |
+| ------------------- | ------------------- | -------------------------------------------------------------------- |
+| `mPrimary`          | `mPrimary`          | `mPrimaryContainer`, `mOnPrimaryContainer`                           |
+| `mOnPrimary`        | `mOnPrimary`        |                                                                      |
+| `mSecondary`        | `mSecondary`        | `mSecondaryContainer`, `mOnSecondaryContainer`                       |
+| `mOnSecondary`      | `mOnSecondary`      |                                                                      |
+| `mTertiary`         | `mTertiary`         | `mTertiaryContainer`, `mOnTertiaryContainer`                         |
+| `mOnTertiary`       | `mOnTertiary`       |                                                                      |
+| `mSurface`          | `mSurface`          | `mSurfaceContainerLow`, `mSurfaceContainer`, `mSurfaceContainerHigh` |
+| `mOnSurface`        | `mOnSurface`        |                                                                      |
+| `mSurfaceVariant`   | `mSurfaceVariant`   |                                                                      |
+| `mOnSurfaceVariant` | `mOnSurfaceVariant` |                                                                      |
+| `mError`            | `mError`            | `mErrorContainer`, `mOnErrorContainer`                               |
+| `mOnError`          | `mOnError`          |                                                                      |
+| `mOutline`          | `mOutline`          | `mOutlineVariant`                                                    |
+| `mShadow`           | `mShadow`           | Kept as-is                                                           |
+| `mHover`            | `mHover`            | Kept as-is                                                           |
+| `mOnHover`          | `mOnHover`          | Kept as-is                                                           |
+| —                   | `mBackground`       | NEW                                                                  |
+| —                   | `mOnBackground`     | NEW                                                                  |

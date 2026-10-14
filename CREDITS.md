@@ -13,7 +13,7 @@
 
 Agnoctural Shell is built upon the foundation of Noctalia Shell, made possible by the incredible work of many open-source projects and contributors.
 
-### Design & Branding
+### Design & Branding -- This is not included in Mordial.
 
 - **MrDowntempo** - Creator of the Noctalia Owl and moon logo
 - **[SaberJ2X](https://www.reddit.com/user/SaberJ64/)** - Creator of Talia, the Noctalia mascot
@@ -52,7 +52,7 @@ Agnoctural Shell is built upon the foundation of Noctalia Shell, made possible b
 - The **Wayland** community for building the future of Linux desktop graphics
 - The **Niri**, **Hyprland**, **Sway**, **Labwc**, and **MangoWC** teams for their excellent Wayland compositors
 - All the original [Noctalia contributors](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors) for building this amazing shell
-- All users and contributors who help maintain and improve Mordial
+- All users and contributors who help maintain and improve Noctalia
 
 ## License
 Mordial Shell is licensed under the MIT License. See [LICENSE](LICENSE) for details.

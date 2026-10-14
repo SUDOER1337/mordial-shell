@@ -81,6 +81,7 @@ Singleton {
     if (!directoriesCreated || settingsFileView.path === undefined) {
       return;
     }
+    externalReloadTimer.restart();
   }
 
   // -----------------------------------------------------

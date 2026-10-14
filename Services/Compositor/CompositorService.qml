@@ -13,7 +13,7 @@ Singleton {
   id: root
 
   // ===== PUBLIC INTERFACE =====
-  // Agnoctural targets MangoWC exclusively. The compositor integration is
+  // Mordial targets MangoWC exclusively. The compositor integration is
   // built on the mmsg IPC socket (MANGO_INSTANCE_SIGNATURE env, set by MangoWC).
 
   property bool isMango: true
@@ -21,6 +21,10 @@ Singleton {
   property ListModel workspaces: ListModel {}
   property ListModel windows: ListModel {}
   property int focusedWindowIndex: -1
+  // Toplevel handles ordered most-recently-focused first. Drives the
+  // Alt-Tab switcher's "previously used window" ordering. Not a binding
+  // target: consumers snapshot it on open.
+  property var focusHistory: []
 
   property var displayScales: ({})
   property bool displayScalesLoaded: false
@@ -146,6 +150,7 @@ Singleton {
       const toplevels = ToplevelManager.toplevels.values;
       const windowList = [];
       let newFocusedIdx = -1;
+      let focusedToplevel = null;
       const currentWindows = new Set();
 
       // Build per-output state from mmsg data
@@ -269,7 +274,26 @@ Singleton {
 
         if (isFocused) {
           newFocusedIdx = windowList.length - 1;
+          focusedToplevel = toplevel;
         }
+      }
+
+      // Update most-recently-focused ordering for the Alt-Tab switcher.
+      // Drop handles for windows that closed, then move the focused window to
+      // the front. Reassign only on change so bindings don't churn.
+      const liveHandles = new Set(windowList.map(w => w.handle));
+      let history = root.focusHistory;
+      if (history.some(h => !liveHandles.has(h))) {
+        history = history.filter(h => liveHandles.has(h));
+      }
+      if (focusedToplevel && history[0] !== focusedToplevel) {
+        history = [focusedToplevel].concat(history.filter(h => h !== focusedToplevel));
+        if (history.length > 64) {
+          history = history.slice(0, 64);
+        }
+      }
+      if (history !== root.focusHistory) {
+        root.focusHistory = history;
       }
 
       // Clean up stale window tracking

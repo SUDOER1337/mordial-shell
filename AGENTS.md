@@ -27,6 +27,20 @@ nix flake show         # Show available derivations
 nix build              # Build the shell package
 ```
 
+### Dev Loop (no rebuild for QML edits)
+Quickshell hot-reloads QML on save (`shell.qml:53-63` handles `onReloadCompleted`/`onReloadFailed`), so `nix build` is **not** part of the normal edit loop.
+
+The clone at `~/.config/quickshell/mordial-shell` is the live working tree. The system-installed copy lives in the Nix store (`nix/package.nix`) and is launched via the `mordial-shell` wrapper. To test edits against the installed wrapper (patched quickshell + pinned mesa + runtime deps), override its `QS_CONFIG_PATH` (the wrapper sets it with `--set-default`, so an exported value wins):
+
+```bash
+QS_CONFIG_PATH=~/.config/quickshell/mordial-shell mordial-shell   # restarts a dev instance pointed at the live tree
+qs -c mordial-shell                                                # devshell alternative (see EGL note below)
+```
+
+The devshell runs `qs` unwrapped, so `nix/shell.nix` exports `__EGL_VENDOR_LIBRARY_FILENAMES` pointing at the flake's own mesa — otherwise libglvnd loads the host's `/run/opengl-driver` mesa (built against a newer glibc than the shell's runtime) and the shell renders nothing. Caveat: the devshell does **not** add the runtime deps (`wlr-randr`, `imagemagick`, …) to `PATH` the way the wrapper does; install them system-wide or use the wrapper for full functionality.
+
+Only run `nix build` when you changed something under `nix/`, or want the system-wide install updated. The latter comes from the `github:SUDOER1337/mordial-shell` flake input in `~/nixos-config/flake.nix`, so it requires commit → push → `nix flake update mordial-shell` → rebuild.
+
 ### Format & Lint
 ```bash
 ./Scripts/dev/qmlfmt.sh       # Format all QML files (uses qmlformat from qt6-declarative)
@@ -77,7 +91,7 @@ UI components — imported as `qs.Modules.*`:
 Backend logic — imported as `qs.Services.*`:
 - **Mordial/** — Fork-specific (config, migrations)
 - **Theming/** — Color schemes, wallpaper colors, dark mode
-- **Control/** — System controls (power, audio, brightness)
+- **Control/** — System controls (power, audio, brightness) and IPC handlers (`IPCService.qml`, `CustomButtonIPCService.qml`)
 - **Networking/** — Network status and WiFi
 - **Hardware/** — System info, battery
 - **Keyboard/** — Keyboard layout
@@ -171,6 +185,11 @@ Only QML source, configs, and assets are packaged.
 
 ### Wayland Compositor Support
 Agnoctural targets **MangoWC only**, talking to it via the `mmsg` IPC socket (`MANGO_INSTANCE_SIGNATURE`). `mmsg` must be on PATH. All other compositor backends have been removed.
+
+### IPC Commands
+- Every `IpcHandler` is exposed as `qs ipc call <target> <function> [args...]`.
+- Handlers live in `Services/Control/IPCService.qml` (standard targets) and `Services/Control/CustomButtonIPCService.qml` (the `cb` target).
+- **`IPC.md` is the source of truth for the command list — keep it in sync.** When you add, remove, rename, or change the arguments of an `IpcHandler` function, update the matching table in `IPC.md`.
 
 ---
 

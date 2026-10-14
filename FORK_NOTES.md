@@ -95,8 +95,6 @@ This fork does **not** submit pull requests upstream or claim to be the official
 **Why not merge back?**
 
 - The Noctalia project has moved to v5 (C++ rewrite)
-- The two projects have diverged in goals and maintenance model
-- Both approaches are valid; users can choose which fits their needs
 
 ---
 
