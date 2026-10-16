@@ -12,6 +12,7 @@ Handlers are defined in:
 
 - `Services/Control/IPCService.qml` — all standard targets
 - `Services/Control/CustomButtonIPCService.qml` — the `cb` target for `CustomButton` bar widgets
+- `Services/Control/PomodoroIPCService.qml` — the `pomodoro` target for `Pomodoro` desktop widgets
 
 > **Keep this file in sync.** When you add, remove, or rename an `IpcHandler` function, update the table below.
 
@@ -166,6 +167,26 @@ Handlers are defined in:
 | `location` | `get`    | —      | Return the configured location name         |
 | `location` | `set`    | `name` | Set the location name and refresh           |
 | `state`    | `all`    | —      | Return all settings and shell state as JSON |
+
+---
+
+## Pomodoro
+
+Controls the live `Pomodoro` desktop widget. Commands apply to every loaded instance so multi-monitor widgets stay in sync; `status` reports the first registered instance.
+
+| Target     | Function    | Args   | Description                                        |
+| ---------- | ----------- | ------ | -------------------------------------------------- |
+| `pomodoro` | `start`     | —      | Start or resume the timer                          |
+| `pomodoro` | `pause`     | —      | Pause the timer                                    |
+| `pomodoro` | `toggle`    | —      | Toggle start/pause based on current state          |
+| `pomodoro` | `reset`     | —      | Reset the current session's timer                  |
+| `pomodoro` | `resetAll`  | —      | Reset everything, including the session count      |
+| `pomodoro` | `skip`      | —      | Skip to the next phase                             |
+| `pomodoro` | `stopAlarm` | —      | Stop the alarm sound if it is playing              |
+| `pomodoro` | `setMode`   | `mode` | Switch phase: `work`, `short`, `long`, `0`, `1`, `2` |
+| `pomodoro` | `status`    | —      | Return the first widget's state as JSON            |
+
+> Requires at least one loaded `Pomodoro` widget; `status` returns `{"available": false}` otherwise.
 
 ---
 

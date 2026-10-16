@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.Commons
-import qs.Modules.DesktopWidgets.Widgets
 
 Singleton {
   id: root
@@ -11,25 +10,10 @@ Singleton {
   // Transient state - not persisted, resets on shell restart
   property bool editMode: false
 
-  // Component definitions
-  property Component clockComponent: Component {
-    DesktopClock {}
-  }
-  property Component mediaPlayerComponent: Component {
-    DesktopMediaPlayer {}
-  }
-  property Component weatherComponent: Component {
-    DesktopWeather {}
-  }
-  property Component systemStatComponent: Component {
-    DesktopSystemStat {}
-  }
-  property Component audioVisualizerComponent: Component {
-    DesktopAudioVisualizer {}
-  }
-
-  // Widget registry object mapping widget names to components
-  // Created in Component.onCompleted to ensure Components are ready
+  // Presence map (id -> true) used only for `in` checks, truthiness, and
+  // key iteration. Loading goes through widgetUrls + Loader.setSource();
+  // keeping widget types out of here avoids a Services.UI <-> Widgets
+  // circular import ("DesktopPomodoro is not a type").
   property var widgets: ({})
 
   // Explicit URLs for core widgets. Inline Component.url returns the parent
@@ -39,22 +23,20 @@ Singleton {
   property var widgetUrls: ({})
 
   Component.onCompleted: {
-    // Initialize widgets object after Components are ready
-    var widgetsObj = {};
-    widgetsObj["Clock"] = clockComponent;
-    widgetsObj["MediaPlayer"] = mediaPlayerComponent;
-    widgetsObj["Weather"] = weatherComponent;
-    widgetsObj["SystemStat"] = systemStatComponent;
-    widgetsObj["AudioVisualizer"] = audioVisualizerComponent;
-    widgets = widgetsObj;
-
     var urlsObj = {};
     urlsObj["Clock"] = _widgetsDir + "DesktopClock.qml";
     urlsObj["MediaPlayer"] = _widgetsDir + "DesktopMediaPlayer.qml";
     urlsObj["Weather"] = _widgetsDir + "DesktopWeather.qml";
     urlsObj["SystemStat"] = _widgetsDir + "DesktopSystemStat.qml";
     urlsObj["AudioVisualizer"] = _widgetsDir + "DesktopAudioVisualizer.qml";
+    urlsObj["Pomodoro"] = _widgetsDir + "DesktopPomodoro.qml";
     widgetUrls = urlsObj;
+
+    var widgetsObj = {};
+    for (var id in urlsObj) {
+      widgetsObj[id] = true;
+    }
+    widgets = widgetsObj;
 
     Logger.i("DesktopWidgetRegistry", "Service started");
   }
@@ -64,7 +46,8 @@ Singleton {
                                      "MediaPlayer": "WidgetSettings/MediaPlayerSettings.qml",
                                      "Weather": "WidgetSettings/WeatherSettings.qml",
                                      "SystemStat": "WidgetSettings/SystemStatSettings.qml",
-                                     "AudioVisualizer": "WidgetSettings/AudioVisualizerSettings.qml"
+                                     "AudioVisualizer": "WidgetSettings/AudioVisualizerSettings.qml",
+                                     "Pomodoro": "WidgetSettings/PomodoroSettings.qml"
                                    })
 
   property var widgetMetadata: ({
@@ -105,6 +88,21 @@ Singleton {
                                     "visualizerType": "linear",
                                     "hideWhenIdle": false,
                                     "colorName": "primary"
+                                  },
+                                  "Pomodoro": {
+                                    "showBackground": true,
+                                    "roundedCorners": true,
+                                    "compactMode": false,
+                                    "workDuration": 25,
+                                    "shortBreakDuration": 5,
+                                    "longBreakDuration": 15,
+                                    "sessionsBeforeLongBreak": 4,
+                                    "autoStartBreaks": false,
+                                    "autoStartWork": false,
+                                    "playSound": true,
+                                    "soundVolume": 0.3,
+                                    "soundRepeat": true,
+                                    "customSoundPath": ""
                                   }
                                 })
 
@@ -114,7 +112,8 @@ Singleton {
     Logger.i("DesktopWidgetRegistry", "Service started");
   }
 
-  // Helper function to get widget component by name
+  // Presence lookup. Returns true if the widget id is registered, else null.
+  // Widgets load via widgetUrls + setSource(), so no Component is returned.
   function getWidget(id) {
     return widgets[id] || null;
   }

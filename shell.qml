@@ -103,6 +103,7 @@ ShellRoot {
           HostService.init();
           NotificationRulesService.init();
           CustomButtonIPCService.init();
+          PomodoroIPCService.init();
           IPCService.init(screenDetector);
 
           // Force ClipboardService initialization so clipboard watchers
