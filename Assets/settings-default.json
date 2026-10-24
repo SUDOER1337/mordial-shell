@@ -6,7 +6,7 @@
     "monitors": [],
     "density": "default",
     "showOutline": false,
-    "outlineOpacity": 0.1,
+    "outlineOpacity": 1,
     "outlineColorKey": "primary",
     "showCapsule": true,
     "capsuleOpacity": 1,
@@ -121,13 +121,28 @@
     "lockScreenBlur": 0,
     "lockScreenTint": 0,
     "keybinds": {
-      "keyUp": ["Up"],
-      "keyDown": ["Down"],
-      "keyLeft": ["Left"],
-      "keyRight": ["Right"],
-      "keyEnter": ["Return", "Enter"],
-      "keyEscape": ["Esc"],
-      "keyRemove": ["Del"]
+      "keyUp": [
+        "Up"
+      ],
+      "keyDown": [
+        "Down"
+      ],
+      "keyLeft": [
+        "Left"
+      ],
+      "keyRight": [
+        "Right"
+      ],
+      "keyEnter": [
+        "Return",
+        "Enter"
+      ],
+      "keyEscape": [
+        "Esc"
+      ],
+      "keyRemove": [
+        "Del"
+      ]
     },
     "reverseScroll": false,
     "smoothScrollEnabled": true
@@ -260,6 +275,10 @@
       "enabled": true,
       "strength": 1
     },
+    "mediaCard": {
+      "frameWidth": 0,
+      "frameColor": "#ffffff"
+    },
     "shortcuts": {
       "left": [
         {
@@ -272,7 +291,7 @@
           "id": "WallpaperSelector"
         },
         {
-          "id": "MordialPerformance"
+          "id": "AgnocturalPerformance"
         }
       ],
       "right": [
@@ -315,11 +334,7 @@
         "enabled": true,
         "id": "media-sysmon-card"
       }
-    ],
-    "mediaCard": {
-      "frameWidth": 0,
-      "frameColor": "#ffffff"
-    }
+    ]
   },
   "systemMonitor": {
     "cpuWarningThreshold": 80,
@@ -431,6 +446,10 @@
       }
     ]
   },
+  "islandLook": {
+    "mediaOnLock": true,
+    "session": false
+  },
   "notifications": {
     "enabled": true,
     "enableMarkdown": false,
@@ -468,7 +487,11 @@
     "autoHideMs": 2000,
     "overlayLayer": true,
     "backgroundOpacity": 1,
-    "enabledTypes": [0, 1, 2],
+    "enabledTypes": [
+      0,
+      1,
+      2
+    ],
     "monitors": []
   },
   "audio": {

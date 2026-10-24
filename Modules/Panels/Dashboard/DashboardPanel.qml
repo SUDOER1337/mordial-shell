@@ -338,7 +338,9 @@ SmartPanel {
             Layout.rowSpan: 2
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.preferredWidth: 320
+            // Keep enough horizontal room for notification summaries and
+            // bodies after each row's icon and controls are laid out.
+            Layout.preferredWidth: Math.round(480 * Style.uiScaleRatio)
           }
         }
 

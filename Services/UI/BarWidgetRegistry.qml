@@ -28,6 +28,7 @@ Singleton {
                            "Network": networkComponent,
                            "NightLight": nightLightComponent,
                            "NotificationHistory": notificationHistoryComponent,
+                           "Pomodoro": pomodoroComponent,
                            "PowerProfile": powerProfileComponent,
                            "SessionMenu": sessionMenuComponent,
                            "Settings": settingsComponent,
@@ -72,6 +73,7 @@ Singleton {
                                      "Network": "WidgetSettings/NetworkSettings.qml",
                                      "NightLight": "WidgetSettings/NightLightSettings.qml",
                                      "NotificationHistory": "WidgetSettings/NotificationHistorySettings.qml",
+                                     "Pomodoro": "WidgetSettings/PomodoroSettings.qml",
                                      "PowerProfile": "WidgetSettings/PowerProfileSettings.qml",
                                      "SessionMenu": "WidgetSettings/SessionMenuSettings.qml",
                                      "Settings": "WidgetSettings/SettingsSettings.qml",
@@ -298,6 +300,20 @@ Singleton {
                                   "NightLight": {
                                     "iconColor": "none"
                                   },
+                                  "Pomodoro": {
+                                    "workDuration": 25,
+                                    "shortBreakDuration": 5,
+                                    "longBreakDuration": 15,
+                                    "sessionsBeforeLongBreak": 4,
+                                    "autoStartBreaks": false,
+                                    "autoStartWork": false,
+                                    "playSound": true,
+                                    "soundVolume": 0.3,
+                                    "soundRepeat": true,
+                                    "customSoundPath": "",
+                                    "iconColor": "none",
+                                    "textColor": "none"
+                                  },
                                   "PowerProfile": {
                                     "iconColor": "none"
                                   },
@@ -383,6 +399,9 @@ Singleton {
   }
   property Component powerProfileComponent: Component {
     PowerProfile {}
+  }
+  property Component pomodoroComponent: Component {
+    Pomodoro {}
   }
   property Component sessionMenuComponent: Component {
     SessionMenu {}

@@ -209,6 +209,20 @@
     "NightLight": {
       "iconColor": "none"
     },
+    "Pomodoro": {
+      "workDuration": 25,
+      "shortBreakDuration": 5,
+      "longBreakDuration": 15,
+      "sessionsBeforeLongBreak": 4,
+      "autoStartBreaks": false,
+      "autoStartWork": false,
+      "playSound": true,
+      "soundVolume": 0.3,
+      "soundRepeat": true,
+      "customSoundPath": "",
+      "iconColor": "none",
+      "textColor": "none"
+    },
     "PowerProfile": {
       "iconColor": "none"
     },

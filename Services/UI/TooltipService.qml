@@ -18,6 +18,22 @@ Singleton {
   // which left a hover-opened Dashboard with no labels and no tooltips.
   readonly property bool hasVisibleTooltip: activeTooltip !== null
 
+  // Tooltip windows sit outside the QML item tree of their source. Panels use
+  // this ownership check instead of the global visibility flag so a tooltip in
+  // one panel cannot keep an unrelated hover-opened panel alive.
+  function hasVisibleTooltipFor(ancestor) {
+    if (!activeTooltip || !activeTooltip.targetItem || !ancestor)
+      return false;
+
+    let item = activeTooltip.targetItem;
+    while (item) {
+      if (item === ancestor)
+        return true;
+      item = item.parent;
+    }
+    return false;
+  }
+
   property Component tooltipComponent: Component {
     Tooltip {}
   }
@@ -49,6 +65,7 @@ Singleton {
 
     // If we already have a tooltip for this target, just update it
     if (activeTooltip && activeTooltip.targetItem === target) {
+      activeTooltip.cancelPendingHide();
       activeTooltip.updateContent(content);
       return activeTooltip;
     }

@@ -13,7 +13,7 @@ Singleton {
   // Presence map (id -> true) used only for `in` checks, truthiness, and
   // key iteration. Loading goes through widgetUrls + Loader.setSource();
   // keeping widget types out of here avoids a Services.UI <-> Widgets
-  // circular import ("DesktopPomodoro is not a type").
+  // circular import ("DesktopClock is not a type").
   property var widgets: ({})
 
   // Explicit URLs for core widgets. Inline Component.url returns the parent
@@ -29,7 +29,6 @@ Singleton {
     urlsObj["Weather"] = _widgetsDir + "DesktopWeather.qml";
     urlsObj["SystemStat"] = _widgetsDir + "DesktopSystemStat.qml";
     urlsObj["AudioVisualizer"] = _widgetsDir + "DesktopAudioVisualizer.qml";
-    urlsObj["Pomodoro"] = _widgetsDir + "DesktopPomodoro.qml";
     widgetUrls = urlsObj;
 
     var widgetsObj = {};
@@ -46,8 +45,7 @@ Singleton {
                                      "MediaPlayer": "WidgetSettings/MediaPlayerSettings.qml",
                                      "Weather": "WidgetSettings/WeatherSettings.qml",
                                      "SystemStat": "WidgetSettings/SystemStatSettings.qml",
-                                     "AudioVisualizer": "WidgetSettings/AudioVisualizerSettings.qml",
-                                     "Pomodoro": "WidgetSettings/PomodoroSettings.qml"
+                                     "AudioVisualizer": "WidgetSettings/AudioVisualizerSettings.qml"
                                    })
 
   property var widgetMetadata: ({
@@ -88,21 +86,6 @@ Singleton {
                                     "visualizerType": "linear",
                                     "hideWhenIdle": false,
                                     "colorName": "primary"
-                                  },
-                                  "Pomodoro": {
-                                    "showBackground": true,
-                                    "roundedCorners": true,
-                                    "compactMode": false,
-                                    "workDuration": 25,
-                                    "shortBreakDuration": 5,
-                                    "longBreakDuration": 15,
-                                    "sessionsBeforeLongBreak": 4,
-                                    "autoStartBreaks": false,
-                                    "autoStartWork": false,
-                                    "playSound": true,
-                                    "soundVolume": 0.3,
-                                    "soundRepeat": true,
-                                    "customSoundPath": ""
                                   }
                                 })
 

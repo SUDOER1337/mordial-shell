@@ -195,10 +195,9 @@ Item {
     const inside = backgroundHoverHandler.hovered || contentHoverHandler.hovered;
     // Reading a tooltip means the pointer is over that tooltip's own popup
     // window, not this panel, so both handlers report a leave. Hold the panel
-    // open instead: a hover-opened panel that closed mid-read would be worse
-    // than a briefly stale hover state, and onVisibleChanged below re-reports
-    // once the tooltip goes away.
-    if (!inside && TooltipService.hasVisibleTooltip)
+    // open only for a tooltip targeted at this panel: a tooltip in another
+    // surface must not prolong this one.
+    if (!inside && TooltipService.hasVisibleTooltipFor(contentLoader.item))
       return;
     // Same reasoning for a dropdown the content opened. While it is up the
     // pointer is over that popup's own surface, so the panel looks like it was
@@ -218,6 +217,10 @@ Item {
     function onHasVisibleTooltipChanged() {
       if (!TooltipService.hasVisibleTooltip)
         root.updatePanelHover();
+    }
+
+    function onActiveTooltipChanged() {
+      root.updatePanelHover();
     }
   }
 

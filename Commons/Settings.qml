@@ -48,7 +48,7 @@ Singleton {
   - Default cache directory: ~/.cache/mordial
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 60
+  readonly property int settingsVersion: 61
   property bool isDebug: Quickshell.env("MORDIAL_DEBUG") === "1"
   readonly property string shellName: "mordial"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("MORDIAL_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -698,6 +698,12 @@ Singleton {
       ]
     }
 
+    // island look (impasto-inspired look)
+    property JsonObject islandLook: JsonObject {
+      property bool mediaOnLock: true // album cover wash behind the lock screen
+      property bool session: false // island tiles for the session menu
+    }
+
     // notifications
     property JsonObject notifications: JsonObject {
       property bool enabled: true
@@ -1268,6 +1274,14 @@ Singleton {
           Logger.i("Settings", "Migrated dashboard shortcut 'AgnocturalPerformance' to 'MordialPerformance'");
         }
       }
+    }
+
+    // v61: islandLook section added. Nothing to rename — the typed adapter
+    // merges undeclared keys from its defaults. Guard keeps older settings
+    // files from carrying a hole of unknown shape forward.
+    if (raw.islandLook && typeof raw.islandLook !== "object") {
+      delete raw.islandLook;
+      Logger.i("Settings", "Removed malformed 'islandLook' settings section");
     }
   }
 

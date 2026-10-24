@@ -13,10 +13,12 @@ Singleton {
   id: root
 
   // ===== PUBLIC INTERFACE =====
-  // Mordial targets MangoWC exclusively. The compositor integration is
-  // built on the mmsg IPC socket (MANGO_INSTANCE_SIGNATURE env, set by MangoWC).
+  // Mordial targets MangoWC primarily, with brief Niri support.
+  // Compositor integration is built on either mmsg IPC (MangoWC)
+  // or niri msg (Niri).
 
-  property bool isMango: true
+  property bool isMango: !!Quickshell.env("MANGO_INSTANCE_SIGNATURE") && !isNiri
+  property bool isNiri: !!Quickshell.env("NIRI_SOCKET") || (Quickshell.env("XDG_CURRENT_DESKTOP") || "").toLowerCase().indexOf("niri") !== -1
 
   property ListModel workspaces: ListModel {}
   property ListModel windows: ListModel {}
@@ -131,6 +133,180 @@ Singleton {
       root.workspaceChanged();
       if (workspaceList.length > 0) {
         Logger.d("CompositorService", "Rebuilt", workspaceList.length, "workspaces from", monitors.length, "monitors");
+      }
+    }
+
+    // ===== NIRI EVENT HANDLERS =====
+
+    function handleNiriEvent(data) {
+      if (!data)
+        return;
+      const keys = Object.keys(data);
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        if (k.indexOf("Workspace") !== -1) {
+          queryNiriWorkspaces();
+          break;
+        }
+        if (k.indexOf("Window") !== -1) {
+          queryNiriWindows();
+          break;
+        }
+        if (k.indexOf("Keyboard") !== -1 || k.indexOf("Layout") !== -1) {
+          queryNiriKeyboardLayout();
+          break;
+        }
+      }
+      // Also refresh
+      queryNiriWorkspaces();
+      queryNiriWindows();
+      queryNiriKeyboardLayout();
+    }
+
+    function queryNiriWorkspaces() {
+      niriQueryProc.command = ["niri", "msg", "--json", "workspaces"];
+      niriQueryProc.running = true;
+    }
+
+    function queryNiriWindows() {
+      // Windows come via "windows" command
+      const proc = niriWindowsProc;
+      proc.command = ["niri", "msg", "--json", "windows"];
+      proc.running = true;
+    }
+
+    function queryNiriKeyboardLayout() {
+      niriKbProc.command = ["niri", "msg", "--json", "keyboard-layouts"];
+      niriKbProc.running = true;
+    }
+
+    function processNiriWorkspaces(workspacesData) {
+      if (!workspacesData)
+        return;
+      const wsList = Array.isArray(workspacesData) ? workspacesData : (workspacesData.workspaces || []);
+      const list = [];
+      for (let i = 0; i < wsList.length; i++) {
+        const ws = wsList[i];
+        const idx = ws.idx !== undefined ? ws.idx : (ws.id !== undefined ? ws.id : i + 1);
+        const output = ws.output || ws.monitor || "";
+        list.push({
+                    id: ws.id !== undefined ? ws.id : idx,
+                    idx: idx,
+                    name: ws.name !== undefined ? ws.name : idx.toString(),
+                    output: output,
+                    isActive: !!(ws.is_active || ws.active || ws.focused),
+                    isFocused: !!(ws.is_focused || ws.focused || ws.is_active),
+                    isUrgent: !!ws.is_urgent,
+                    isOccupied: !!(ws.windows_count > 0 || ws.occupied)
+                  });
+      }
+      list.sort((a, b) => (a.idx || 0) - (b.idx || 0));
+      const signature = JSON.stringify(list.map(w => w.id + "|" + w.isActive + "|" + w.isFocused + "|" + w.isUrgent + "|" + w.isOccupied));
+      if (signature === internal.lastWorkspaceSignature) {
+        return;
+      }
+      internal.lastWorkspaceSignature = signature;
+      root.workspaces.clear();
+      for (let k = 0; k < list.length; k++) {
+        root.workspaces.append(list[k]);
+      }
+      root.workspaceChanged();
+    }
+
+    function processNiriWindows(windowsData) {
+      if (!windowsData)
+        return;
+      const winList = Array.isArray(windowsData) ? windowsData : (windowsData.windows || []);
+      const list = [];
+      let newFocusedIdx = -1;
+      for (let i = 0; i < winList.length; i++) {
+        const w = winList[i];
+        const isFocused = !!(w.is_focused || w.focused);
+        if (isFocused && newFocusedIdx === -1) {
+          newFocusedIdx = i;
+        }
+        list.push({
+                    id: w.id,
+                    address: w.id,
+                    title: w.title || "",
+                    appId: w.app_id || w.appId || w.class || "",
+                    class: w.app_id || w.appId || w.class || "",
+                    isFocused: isFocused,
+                    workspaceId: w.workspace_id || w.workspaceId,
+                    output: w.output || "",
+                    handle: null
+                  });
+      }
+      const signature = JSON.stringify(list.map(w => w.id + w.title + w.appId + w.isFocused));
+      if (signature !== internal.lastWindowSignature) {
+        internal.lastWindowSignature = signature;
+        root.windows.clear();
+        for (let k = 0; k < list.length; k++) {
+          root.windows.append(list[k]);
+        }
+        root.windowListChanged();
+      }
+      if (newFocusedIdx !== root.focusedWindowIndex) {
+        root.focusedWindowIndex = newFocusedIdx;
+        root.activeWindowChanged();
+      }
+    }
+
+    function processNiriKeyboardLayout(data) {
+      if (!data)
+        return;
+      let layoutStr = "";
+      if (typeof data === "string") {
+        layoutStr = data;
+      } else if (data.current_layout_name) {
+        layoutStr = data.current_layout_name;
+      } else if (data.current) {
+        layoutStr = data.current;
+      } else if (data.names && Array.isArray(data.names)) {
+        const idx = typeof data.current_idx === "number" ? data.current_idx : (typeof data.current === "number" ? data.current : 0);
+        layoutStr = data.names[idx] || data.names[0] || "";
+      } else if (data.layouts && Array.isArray(data.layouts)) {
+        const idx = typeof data.current_idx === "number" ? data.current_idx : 0;
+        const l = data.layouts[idx] || data.layouts[0];
+        if (l) {
+          layoutStr = l.name || l.short_name || l.shortName || l.xkb_layout || "";
+        }
+      }
+      if (layoutStr && layoutStr.length > 0) {
+        KeyboardLayoutService.setCurrentLayout(layoutStr);
+      }
+    }
+
+    property QtObject _niriWindowsProc: Process {
+      id: niriWindowsProc
+      command: ["niri", "msg", "--json", "windows"]
+      running: false
+
+      property string buffer: ""
+      stdout: SplitParser {
+        onRead: line => {
+          niriWindowsProc.buffer += line;
+        }
+      }
+      onRunningChanged: {
+        if (running) {
+          niriWindowsProc.buffer = "";
+        } else if (niriWindowsProc.buffer.length > 0) {
+          const txt = niriWindowsProc.buffer;
+          try {
+            const data = JSON.parse(txt);
+            if (Array.isArray(data)) {
+              internal.processNiriWindows(data);
+            } else if (data && data.windows && Array.isArray(data.windows)) {
+              internal.processNiriWindows(data.windows);
+            } else {
+              internal.processNiriWindows(data);
+            }
+          } catch (e) {
+            // ignore
+          }
+          niriWindowsProc.buffer = "";
+        }
       }
     }
 
@@ -356,7 +532,7 @@ Singleton {
   property QtObject _mmsgWatch: Process {
     id: mmsgWatch
     command: ["mmsg", "watch", "all-monitors"]
-    running: root.initialized
+    running: root.initialized && !root.isNiri
 
     stdout: SplitParser {
       onRead: line => {
@@ -402,7 +578,7 @@ Singleton {
   property QtObject _kbLayoutWatch: Process {
     id: kbLayoutWatch
     command: ["mmsg", "watch", "keyboardlayout"]
-    running: root.initialized
+    running: root.initialized && !root.isNiri
 
     stdout: SplitParser {
       onRead: line => {
@@ -441,11 +617,134 @@ Singleton {
     }
   }
 
+  property QtObject _niriQueryProc: Process {
+    id: niriQueryProc
+    command: ["niri", "msg", "--json", "workspaces"]
+    running: false
+
+    property string buffer: ""
+    stdout: SplitParser {
+      onRead: line => {
+        niriQueryProc.buffer += line;
+      }
+    }
+    onRunningChanged: {
+      if (running) {
+        niriQueryProc.buffer = "";
+      } else if (niriQueryProc.buffer.length > 0) {
+        const txt = niriQueryProc.buffer;
+        try {
+          const data = JSON.parse(txt);
+          if (Array.isArray(data)) {
+            internal.processNiriWorkspaces(data);
+          } else if (data && data.workspaces && Array.isArray(data.workspaces)) {
+            internal.processNiriWorkspaces(data.workspaces);
+          } else {
+            internal.processNiriWorkspaces(data);
+          }
+        } catch (e) {
+          // ignore
+        }
+        niriQueryProc.buffer = "";
+      }
+    }
+  }
+
+  property QtObject _niriKbProc: Process {
+    id: niriKbProc
+    command: ["niri", "msg", "--json", "keyboard-layouts"]
+    running: false
+
+    property string buffer: ""
+    stdout: SplitParser {
+      onRead: line => {
+        niriKbProc.buffer += line;
+      }
+    }
+    onRunningChanged: {
+      if (running) {
+        niriKbProc.buffer = "";
+      } else if (niriKbProc.buffer.length > 0) {
+        const txt = niriKbProc.buffer;
+        try {
+          const data = JSON.parse(txt);
+          internal.processNiriKeyboardLayout(data);
+        } catch (e) {
+          // ignore
+        }
+        niriKbProc.buffer = "";
+      }
+    }
+  }
+
+  // ===== NIRI SUPPORT =====
+  property QtObject _niriEventStream: Process {
+    id: niriEventStream
+    command: ["niri", "msg", "--json", "event-stream"]
+    running: root.initialized && root.isNiri
+
+    stdout: SplitParser {
+      onRead: line => {
+        const trimmed = line.trim();
+        if (trimmed.length === 0)
+        return;
+        try {
+          const data = JSON.parse(trimmed);
+          internal.handleNiriEvent(data);
+        } catch (e) {
+          Logger.e("CompositorService", "Failed to parse niri event:", e);
+        }
+      }
+    }
+
+    onRunningChanged: {
+      if (!running && root.initialized && root.isNiri) {
+        Logger.w("CompositorService", "niri event-stream exited, restarting in 1s");
+        niriEventRestartTimer.restart();
+      }
+    }
+  }
+
+  property QtObject _niriEventRestartTimer: Timer {
+    id: niriEventRestartTimer
+    interval: 1000
+    onTriggered: {
+      if (root.initialized && root.isNiri && !niriEventStream.running) {
+        Logger.i("CompositorService", "Restarting niri event-stream");
+        niriEventStream.running = true;
+      }
+    }
+  }
+
+  property QtObject _niriWorkspacesTimer: Timer {
+    id: niriWorkspacesTimer
+    interval: 2000
+    repeat: true
+    running: false
+    onTriggered: {
+      if (root.isNiri) {
+        internal.queryNiriWorkspaces();
+      }
+    }
+  }
+
+  property QtObject _niriWindowsTimer: Timer {
+    id: niriWindowsTimer
+    interval: 1500
+    repeat: true
+    running: false
+    onTriggered: {
+      if (root.isNiri) {
+        internal.queryNiriWindows();
+      }
+    }
+  }
+
   // ===== TOPLEVEL MANAGER CONNECTION =====
 
   property QtObject _toplevelConnection: Connections {
     target: ToplevelManager.toplevels
-    enabled: ToplevelManager.toplevels !== null && ToplevelManager.toplevels !== undefined
+    enabled: ToplevelManager.toplevels !== null && ToplevelManager.toplevels !== undefined && !root.isNiri
 
     function onValuesChanged() {
       internal.updateWindows();
@@ -476,6 +775,25 @@ Singleton {
 
   function initialize() {
     if (initialized) {
+      return;
+    }
+
+    if (root.isNiri) {
+      Logger.i("CompositorService", "Initializing Niri compositor integration (niri msg)");
+      Logger.i("CompositorService", "ToplevelManager.toplevels:", ToplevelManager.toplevels ? "available" : "null");
+      Logger.i("CompositorService", "Quickshell.screens count:", Quickshell.screens ? Quickshell.screens.length : 0);
+
+      if (!Quickshell.env("NIRI_SOCKET")) {
+        Logger.w("CompositorService", "NIRI_SOCKET not set - niri integration may fail");
+      }
+
+      niriEventStream.running = true;
+      niriWorkspacesTimer.start();
+      niriWindowsTimer.start();
+      internal.queryNiriWorkspaces();
+      internal.queryNiriWindows();
+      internal.queryNiriKeyboardLayout();
+      initialized = true;
       return;
     }
 
@@ -592,6 +910,11 @@ Singleton {
   }
 
   function switchToWorkspace(workspace) {
+    if (root.isNiri) {
+      const wsId = workspace.id !== undefined ? workspace.id : (workspace.idx || 1);
+      Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", wsId.toString()]);
+      return;
+    }
     const tagId = workspace.idx || workspace.id || 1;
     const outputName = workspace.output || root.selectedMonitor || "";
 
@@ -622,7 +945,19 @@ Singleton {
   }
 
   function focusWindow(window) {
-    if (window && window.handle) {
+    if (!window)
+      return;
+    if (root.isNiri) {
+      if (window.id !== undefined && window.id !== null) {
+        Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", window.id.toString()]);
+        return;
+      }
+      if (window.appId) {
+        // Try to focus by title/app - fallback
+      }
+      return;
+    }
+    if (window.handle) {
       window.handle.activate();
     } else if (window.workspaceId) {
       switchToWorkspace({
@@ -633,6 +968,14 @@ Singleton {
   }
 
   function closeWindow(window) {
+    if (root.isNiri) {
+      if (window && window.id !== undefined && window.id !== null) {
+        Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", window.id.toString()]);
+        return;
+      }
+      Quickshell.execDetached(["niri", "msg", "action", "close-window"]);
+      return;
+    }
     if (window && window.handle) {
       window.handle.close();
     } else {
@@ -644,6 +987,15 @@ Singleton {
     const cmdArray = Array.isArray(command) ? command : (command && typeof command === "object" && command.length !== undefined) ? Array.from(command) : [command];
 
     Logger.d("CompositorService", "Spawning: " + cmdArray.join(" "));
+    if (root.isNiri) {
+      try {
+        Quickshell.execDetached(cmdArray);
+        return;
+      } catch (e) {
+        Logger.e("CompositorService", "Failed to execute detached:", e);
+        return;
+      }
+    }
     try {
       const cmd = ["mmsg", "dispatch", "spawn_shell," + cmdArray.join(" ")];
       Quickshell.execDetached(cmd);
@@ -682,6 +1034,10 @@ Singleton {
     Logger.i("Compositor", "Logout requested");
     if (executeSessionAction("logout"))
       return;
+    if (root.isNiri) {
+      Quickshell.execDetached(["niri", "msg", "action", "quit"]);
+      return;
+    }
     Quickshell.execDetached(["mmsg", "dispatch", "quit"]);
   }
 
@@ -755,6 +1111,10 @@ Singleton {
   }
 
   function cycleKeyboardLayout() {
+    if (root.isNiri) {
+      Quickshell.execDetached(["niri", "msg", "action", "switch-layout", "next"]);
+      return;
+    }
     Quickshell.execDetached(["mmsg", "dispatch", "switch_keyboard_layout"]);
   }
 

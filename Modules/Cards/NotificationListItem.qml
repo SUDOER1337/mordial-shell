@@ -68,7 +68,7 @@ Item {
     }
   }
   visible: root.inCurrentRange
-  height: visible && !isRemoving ? contentColumn.height + Style.margin2M + root.shadowPadding * 2 : 0
+  height: visible && !isRemoving ? contentColumn.height + root.vPadding * 2 + root.shadowPadding * 2 : 0
 
   property bool canExpand: summaryText.truncated || bodyText.truncated
   property real swipeOffset: 0
@@ -90,6 +90,17 @@ Item {
   // offset it back out with negative column spacing to keep a marginM gap between
   // the visible cards (see Modules/Notification/Notification.qml).
   readonly property int shadowPadding: Style.cardShadowPadding
+  // Horizontal inset of the card background. cardShadowPadding adds `marginL` on
+  // top of the blur room purely to space vertically stacked cards, which does not
+  // apply left/right, so the card can sit closer to the row edges and fill more of
+  // the owning panel/card width. The shadow's faint tail is clipped slightly at
+  // the row edges in exchange.
+  readonly property int hShadowPadding: Style.marginL
+  // Vertical padding between the content and the card's top/bottom edges. Kept
+  // larger than the old marginM so a one-line notification is not a thin strip.
+  // The gap between stacked cards is set by the owning list's column spacing, not
+  // by this value.
+  readonly property int vPadding: Style.marginL
   // Same fill/border alpha the popup card and toasts use, so a row reads as the
   // notification the user already sees over the desktop.
   readonly property real backgroundAlpha: Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0
@@ -202,7 +213,10 @@ Item {
   Rectangle {
     id: cardBackground
     anchors.fill: parent
-    anchors.margins: root.shadowPadding
+    anchors.leftMargin: root.hShadowPadding
+    anchors.rightMargin: root.hShadowPadding
+    anchors.topMargin: root.shadowPadding
+    anchors.bottomMargin: root.shadowPadding
     radius: Style.radiusL
     color: Qt.alpha(Color.mSurfaceContainer, root.backgroundAlpha)
     border.color: {
@@ -348,8 +362,11 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    // The extra shadowPadding lines the content up with the inset card.
-    anchors.margins: Style.marginM + root.shadowPadding
+    // The extra shadowPadding lines the content up with the inset card. The
+    // horizontal inset matches hShadowPadding so text keeps marginM inside the card.
+    anchors.leftMargin: Style.marginM + root.hShadowPadding
+    anchors.rightMargin: Style.marginM + root.hShadowPadding
+    anchors.topMargin: root.vPadding + root.shadowPadding
     spacing: Style.marginM
 
     Row {

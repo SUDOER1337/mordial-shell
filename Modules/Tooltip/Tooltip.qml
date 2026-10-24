@@ -21,6 +21,10 @@ PopupWindow {
 
   property int animationDuration: Style.animationFast
   property real animationScale: 0.85
+  // Allow the pointer to cross the small gap between a target and its popup.
+  // Without this, the target's onExited handler starts hiding the tooltip
+  // before the tooltip window can report that it is hovered.
+  property int hoverExitGrace: 100
 
   // Font scale calculation matching NText behavior
   readonly property real gridFontScale: {
@@ -50,6 +54,8 @@ PopupWindow {
   property real anchorY: 0
   property bool isPositioned: false
   property bool animatingOut: true
+  property bool tooltipHovered: false
+  property bool hideRequested: false
   property int screenWidth: 1920
   property int screenHeight: 1080
   property int screenX: 0
@@ -75,10 +81,11 @@ PopupWindow {
   // Timer for hiding tooltip after delay
   Timer {
     id: hideTimer
-    interval: root.hideDelay
+    interval: root.hideDelay > 0 ? root.hideDelay : root.hoverExitGrace
     repeat: false
     onTriggered: {
-      root.startHideAnimation();
+      if (!root.tooltipHovered)
+        root.startHideAnimation();
     }
   }
 
@@ -142,6 +149,7 @@ PopupWindow {
 
     // Stop any running timers and animations
     hideTimer.stop();
+    hideRequested = false;
     showTimer.stop();
     hideAnimation.stop();
     animatingOut = false;
@@ -429,7 +437,12 @@ PopupWindow {
     // Stop hide timer if it's running
     hideTimer.stop();
 
-    if (hideDelay > 0 && visible && !animatingOut) {
+    hideRequested = true;
+
+    if (tooltipHovered)
+      return;
+
+    if (visible && !animatingOut) {
       hideTimer.start();
     } else {
       startHideAnimation();
@@ -444,12 +457,21 @@ PopupWindow {
     hideAnimation.start();
   }
 
+  // Pause a pending hide while the pointer is over the tooltip itself.
+  // hideRequested deliberately stays true: the source target already fired
+  // its exit once and will not fire again, so leaving the tooltip must
+  // still find a hide request to act on.
+  function cancelPendingHide() {
+    hideTimer.stop();
+  }
+
   function completeHide() {
     visible = false;
     animatingOut = false;
     text = "";
     rows = null;
     isPositioned = false;
+    hideRequested = false;
     tooltipContainer.opacity = 1.0;
     tooltipContainer.scale = 1.0;
   }
@@ -462,6 +484,20 @@ PopupWindow {
     hideAnimation.stop();
     animatingOut = false;
     completeHide();
+  }
+
+  // Tooltips are usually passive, but their own surface still needs to count
+  // as a continuation of hovering the source control. This lets hover-opened
+  // panels stay open while a tooltip is being read.
+  HoverHandler {
+    onHoveredChanged: {
+      root.tooltipHovered = hovered;
+      if (hovered) {
+        root.cancelPendingHide();
+      } else if (root.hideRequested) {
+        root.hide();
+      }
+    }
   }
 
   // Update content function (supports both text and rows)

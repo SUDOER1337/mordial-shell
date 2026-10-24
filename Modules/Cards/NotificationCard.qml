@@ -26,7 +26,9 @@ NBox {
   implicitHeight: content.implicitHeight + Style.margin2M
   // Fills the height the Dashboard column layout assigns to this card.
   Layout.fillHeight: true
-  Layout.preferredWidth: 320
+  // Notification rows reserve room for their icon and per-row controls, so
+  // give their text a wider column than the dashboard's other cards.
+  Layout.preferredWidth: Math.round(480 * Style.uiScaleRatio)
 
   /** Empty every history entry from the card's header. */
   function clearAll() {

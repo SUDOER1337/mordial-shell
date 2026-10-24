@@ -1,15 +1,36 @@
+// File: Modules/LockScreen/LockScreenHeader.qml
+// =============================================================================
+// Island display clock, centered on the lock surface: date line above, giant
+// digits stacked below, all lifted with a black shadow instead of dimming the
+// background. The user's identity is not shown here — the auth pill carries
+// it.
+//
+// Functions:
+//   (declarative component) - no imperative logic
+// =============================================================================
+
 import QtQuick
-import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell
 import qs.Commons
-import qs.Services.System
 import qs.Widgets
 
-// Time, Date, and User Profile Container
+// Time and Date Container
 Rectangle {
   id: root
 
-  readonly property bool animationsEnabled: Settings.data.general.lockScreenAnimations || false
+  // Display text component shared by all clock strings
+  component DisplayText: NText {
+    // Shadow-not-scrim: large text lifts itself off the wash
+    layer.enabled: true
+    layer.effect: MultiEffect {
+      shadowEnabled: true
+      shadowColor: Qt.rgba(0, 0, 0, Look.textShadowOpacity)
+      shadowBlur: 0.4
+      shadowVerticalOffset: Look.textShadowOffset
+      shadowHorizontalOffset: Look.textShadowOffset * 0.5
+    }
+  }
 
   // Use timer-driven properties instead of Time.now to avoid per-frame repaints.
   // Time.now updates every frame (~60+ Hz); these update only when needed.
@@ -30,150 +51,54 @@ Rectangle {
     onTriggered: root.currentDate = new Date()
   }
 
-  width: Math.max(500, contentRow.implicitWidth + 32)
-  height: Math.max(120, contentRow.implicitHeight + 32)
-  anchors.horizontalCenter: parent.horizontalCenter
-  anchors.top: parent.top
-  anchors.topMargin: 100
-  radius: Style.radiusL
-  color: Color.mSurfaceContainer
-  border.color: Color.mOutlineVariant
-  border.width: Style.borderS
+  // Date as a capitalized "Weekday, Month D" line
+  readonly property string dateLine: {
+    var dateString = Qt.locale().toString(root.currentDate, "dddd, MMMM d");
+    return dateString.charAt(0).toUpperCase() + dateString.slice(1);
+  }
 
-  RowLayout {
-    id: contentRow
-    anchors.fill: parent
-    anchors.margins: Style.marginL
-    spacing: Style.margin2XL
+  readonly property string hourText: Qt.locale().toString(root.currentTime, "HH")
+  readonly property string minuteText: Qt.locale().toString(root.currentTime, "mm")
 
-    // Left side: Initials avatar
-    Rectangle {
-      Layout.preferredWidth: 70
-      Layout.preferredHeight: 70
-      Layout.alignment: Qt.AlignVCenter
-      radius: width / 2
-      color: Color.mPrimaryContainer
-      border.color: Qt.alpha(Color.mPrimary, 0.8)
-      border.width: Style.borderM
+  anchors.fill: parent
+  color: "transparent"
 
-      SequentialAnimation on border.color {
-        loops: Animation.Infinite
-        running: root.animationsEnabled
-        ColorAnimation {
-          to: Qt.alpha(Color.mPrimary, 1.0)
-          duration: 2000
-          easing.type: Easing.InOutQuad
-        }
-        ColorAnimation {
-          to: Qt.alpha(Color.mPrimary, 0.8)
-          duration: 2000
-          easing.type: Easing.InOutQuad
-        }
-      }
+  // --- Island display clock, centered on the lock surface ---
+  // Date line, then stacked "HH" over "MM". Minutes sit dimmer than hours.
+  // Redrawn every minute via the timers above.
+  Column {
+    id: clockColumn
+    anchors.centerIn: parent
+    spacing: 0
 
-      NText {
-        anchors.centerIn: parent
-        text: {
-          var name = HostService.displayName || "U";
-          var parts = name.trim().split(/\s+/);
-          if (parts.length >= 2)
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-          return name.substring(0, 2).toUpperCase();
-        }
-        pointSize: 24
+    // --- Date line ---
+    DisplayText {
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: root.dateLine
+      pointSize: 20
+      font.weight: Style.fontWeightSemiBold
+      color: Look.inkDim
+    }
+
+    // --- Digits: stacked "HH" over "MM" ---
+    Column {
+      anchors.horizontalCenter: parent.horizontalCenter
+      spacing: -24
+
+      DisplayText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: root.hourText
+        pointSize: 96
         font.weight: Style.fontWeightBold
-        color: Color.mOnPrimaryContainer
-      }
-    }
-
-    // Center: User Info Column (left-aligned text)
-    ColumnLayout {
-      Layout.alignment: Qt.AlignVCenter
-      spacing: Style.marginXXS
-
-      // Welcome back + Username on one line
-      NText {
-        text: "Welcome back," + " " + HostService.displayName + "!"
-        pointSize: Style.fontSizeXXL
-        color: Color.mOnSurface
-        horizontalAlignment: Text.AlignLeft
+        color: Look.ink
       }
 
-      // Date below
-      NText {
-        text: {
-          var dateString = Qt.locale().toString(root.currentDate, "dddd, MMMM d");
-          return dateString.charAt(0).toUpperCase() + dateString.slice(1);
-        }
-        pointSize: Style.fontSizeXL
-        color: Color.mOnSurfaceVariant
-        horizontalAlignment: Text.AlignLeft
-      }
-    }
-
-    // Spacer to push time to the right
-    Item {
-      Layout.fillWidth: true
-    }
-
-    // Clock
-    Item {
-      Layout.preferredWidth: Settings.data.general.clockStyle === "analog" ? 70 : (Settings.data.general.clockStyle === "custom" ? 90 : 70)
-      Layout.preferredHeight: Settings.data.general.clockStyle === "analog" ? 70 : (Settings.data.general.clockStyle === "custom" ? 90 : 70)
-      Layout.alignment: Qt.AlignVCenter
-
-      // Analog Clock
-      NClock {
-        anchors.centerIn: parent
-        width: 70
-        height: 70
-        visible: Settings.data.general.clockStyle === "analog"
-        now: root.currentTime
-        clockStyle: "analog"
-        backgroundColor: "transparent"
-        clockColor: Color.mOnSurface
-        secondHandColor: Color.mPrimary
-      }
-
-      // Digital Clock (Standard)
-      NClock {
-        anchors.centerIn: parent
-        width: 70
-        height: 70
-        visible: Settings.data.general.clockStyle === "digital"
-        now: root.currentTime
-        clockStyle: "digital"
-        showProgress: true
-        progressColor: Color.mPrimary
-        backgroundColor: "transparent"
-        clockColor: Color.mOnSurface
-        hoursFontSize: Style.fontSizeL
-        minutesFontSize: Style.fontSizeL
-        hoursFontWeight: Style.fontWeightBold
-        minutesFontWeight: Style.fontWeightBold
-      }
-
-      // Custom Clock (Stacked)
-      ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width
-        visible: Settings.data.general.clockStyle === "custom"
-        spacing: -3
-
-        Repeater {
-          model: Qt.locale().toString(root.currentTime, (Settings.data.general.clockFormat || "hh\\nmm").replace(/\\n/g, "\n")).split("\n")
-          NText {
-            text: modelData
-            pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
-            color: Color.mOnSurface
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
-            Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: parent.width
-            Layout.fillWidth: true
-          }
-        }
+      DisplayText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: root.minuteText
+        pointSize: 96
+        font.weight: Style.fontWeightBold
+        color: Look.inkMuted
       }
     }
   }

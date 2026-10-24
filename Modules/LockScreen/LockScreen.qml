@@ -155,7 +155,9 @@ Loader {
                   anchors.bottom: parent.bottom
                   anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
                   radius: Style.radiusL
-                  color: Color.mTertiary
+                  color: Look.surface
+                  border.color: Look.hairline
+                  border.width: 1
                   visible: lockContext.showInfo && lockContext.infoMessage && !panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 
@@ -167,12 +169,12 @@ Loader {
                     NIcon {
                       icon: "circle-key"
                       pointSize: Style.fontSizeXL
-                      color: Color.mOnTertiary
+                      color: Look.ink
                     }
 
                     NText {
                       text: lockContext.infoMessage
-                      color: Color.mOnTertiary
+                      color: Look.ink
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                     }
@@ -194,7 +196,9 @@ Loader {
                   anchors.bottom: parent.bottom
                   anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
                   radius: Style.radiusL
-                  color: Color.mError
+                  color: Look.surface
+                  border.color: Look.statusBad
+                  border.width: 1
                   visible: lockContext.showFailure && lockContext.errorMessage && !panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 
@@ -206,12 +210,12 @@ Loader {
                     NIcon {
                       icon: "alert-circle"
                       pointSize: Style.fontSizeXL
-                      color: Color.mOnError
+                      color: Look.statusBad
                     }
 
                     NText {
                       text: lockContext.errorMessage || "Authentication failed"
-                      color: Color.mOnError
+                      color: Look.statusBad
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                     }
@@ -233,7 +237,9 @@ Loader {
                   anchors.bottom: parent.bottom
                   anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
                   radius: Style.radiusL
-                  color: Color.mBackground
+                  color: Look.surface
+                  border.color: Look.hairline
+                  border.width: 1
                   visible: panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 
@@ -246,12 +252,12 @@ Loader {
                     NIcon {
                       icon: "clock"
                       pointSize: Style.fontSizeXL
-                      color: Color.mPrimary
+                      color: Look.ink
                     }
 
                     NText {
                       text: panelComponent.pendingAction + " in " + panelComponent.timeRemaining + " seconds..."
-                      color: Color.mOnSurface
+                      color: Look.ink
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                       font.weight: Style.fontWeightBold

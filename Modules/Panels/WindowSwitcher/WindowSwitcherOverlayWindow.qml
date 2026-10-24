@@ -42,19 +42,23 @@ Variants {
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
       readonly property int itemCount: WindowSwitcherService.items.length
+      readonly property int maxCols: Math.max(1, Math.floor((width - Style.margin2L * 2 - Style.marginL * 2 + Style.marginS) / (cellW + Style.marginS)))
+      readonly property int maxRows: Math.max(1, Math.floor((height - Style.margin2L * 2 - Style.marginL * 2 - footerH) / (cellH + Style.marginS)))
       readonly property int columns: {
         if (itemCount <= 0)
           return 1;
-        return Math.min(6, Math.max(1, Math.ceil(Math.sqrt(itemCount))));
+        var cols = Math.min(6, Math.max(1, Math.ceil(Math.sqrt(itemCount))));
+        cols = Math.max(cols, Math.ceil(itemCount / maxRows));
+        return Math.min(cols, maxCols);
       }
       readonly property int rows: itemCount <= 0 ? 1 : Math.ceil(itemCount / columns)
       readonly property real cellW: Math.round(190 * Style.uiScaleRatio)
       readonly property real cellH: Math.round(140 * Style.uiScaleRatio)
       readonly property real gridW: columns * cellW + (columns - 1) * Style.marginS
       readonly property real gridH: rows * cellH + (rows - 1) * Style.marginS
-      readonly property real headerH: Math.round(48 * Style.uiScaleRatio)
+      readonly property real footerH: Math.round(48 * Style.uiScaleRatio)
       readonly property real cardW: Math.min(width - Style.margin2L * 2, gridW + Style.marginL * 2)
-      readonly property real cardH: Math.min(height - Style.margin2L * 2, gridH + headerH + Style.marginL * 2 + Style.marginS)
+      readonly property real cardH: Math.min(height - Style.margin2L * 2, gridH + footerH + Style.marginL * 2 + Style.marginS)
 
       // Dimmer - click outside the card cancels.
       Rectangle {
@@ -78,6 +82,7 @@ Variants {
         anchors.centerIn: parent
         width: overlay.cardW
         height: overlay.cardH
+        clip: true
         radius: Style.radiusL
         color: Color.mSurfaceVariant
         forceOpaque: true
@@ -152,7 +157,7 @@ Variants {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onEntered: WindowSwitcherService.selectedIndex = tile.index
+                  // Hover deliberately does not select: it would fight keyboard cycling
                   onClicked: {
                     WindowSwitcherService.selectedIndex = tile.index;
                     WindowSwitcherService.commit();
@@ -164,7 +169,7 @@ Variants {
 
           NText {
             Layout.fillWidth: true
-            Layout.preferredHeight: overlay.headerH - Style.marginS
+            Layout.preferredHeight: overlay.footerH - Style.marginS
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             pointSize: Style.fontSizeM

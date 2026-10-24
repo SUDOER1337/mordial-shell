@@ -11,6 +11,14 @@ ColumnLayout {
 
   NToggle {
     Layout.fillWidth: true
+    label: "Island look"
+    description: "Restyle the session menu tiles with an opaque, impasto-inspired look."
+    checked: Settings.data.islandLook.session
+    onToggled: checked => Settings.data.islandLook.session = checked
+  }
+
+  NToggle {
+    Layout.fillWidth: true
     label: "Large buttons style"
     description: "Display the session menu with large buttons in a grid layout."
     checked: Settings.data.sessionMenu.largeButtonsStyle

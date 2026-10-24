@@ -1181,6 +1181,7 @@ Item {
                   cursorShape: Qt.PointingHandCursor
                   onEntered: {
                     tabItem.hovering = true;
+                    root.currentTabIndex = index;
                     // Show tooltip when sidebar is collapsed
                     if (!root.sidebarExpanded) {
                       TooltipService.show(tabItem, I18n.tr(modelData.label));

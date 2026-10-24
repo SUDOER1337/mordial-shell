@@ -55,7 +55,7 @@ Singleton {
   }
 
   /** Open the switcher, preselecting the first target in `direction`. */
-  function open(direction) // Open overlay with initial selection
+  function open(direction = 1) // Open overlay with initial selection
   {
     items = buildItems();
     if (items.length === 0) {
@@ -72,6 +72,7 @@ Singleton {
     }
     isOpen = true;
     safetyTimer.restart();
+    Logger.d("WindowSwitcher", "Opened:", items.length, "windows, selection:", selectedIndex);
   }
 
   /** Focus the selected window and close. */
@@ -81,13 +82,18 @@ Singleton {
       return;
     }
     var item = items[selectedIndex];
+    Logger.d("WindowSwitcher", "Committing selection:", selectedIndex, "/", items.length);
     close();
-    if (item && item.handle) {
-      CompositorService.focusWindow({
-                                      "handle": item.handle,
-                                      "workspaceId": item.workspaceId,
-                                      "output": item.output
-                                    });
+    try {
+      if (item) {
+        CompositorService.focusWindow({
+                                        "handle": item.handle,
+                                        "workspaceId": item.workspaceId,
+                                        "output": item.output
+                                      });
+      }
+    } catch (e) {
+      Logger.w("WindowSwitcher", "Failed to focus window after commit:", e);
     }
   }
 
@@ -100,6 +106,7 @@ Singleton {
   /** Reset all switcher state. */
   function close() // Internal reset
   {
+    Logger.d("WindowSwitcher", "Closed");
     isOpen = false;
     items = [];
     selectedIndex = 0;

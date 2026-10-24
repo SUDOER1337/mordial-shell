@@ -42,11 +42,16 @@ SmartPanel {
   readonly property bool largeButtonsStyle: Settings.data.sessionMenu.largeButtonsStyle || false
   readonly property bool largeButtonsLayout: Settings.data.sessionMenu.largeButtonsLayout || "grid"
 
-  // Large buttons style is fullscreen — disable blur behind it
-  blurEnabled: !largeButtonsStyle
+  // Island look: opaque black panel with impasto tile styling
+  readonly property bool islandLook: Settings.data.islandLook.session
 
-  // Make panel background transparent for large buttons style
-  panelBackgroundColor: largeButtonsStyle ? "transparent" : Color.mBackground
+  // Large buttons style is fullscreen; the island look is opaque, so neither
+  // wants blur behind it
+  blurEnabled: !largeButtonsStyle && !islandLook
+
+  // Transparent for large buttons (they cover the screen), island black for
+  // the island look, scheme background otherwise
+  panelBackgroundColor: largeButtonsStyle ? "transparent" : (islandLook ? Look.ground : Color.mBackground)
 
   preferredWidth: largeButtonsStyle ? 0 : Math.round(440 * Style.uiScaleRatio)
   preferredWidthRatio: largeButtonsStyle ? 1.0 : 0
@@ -612,8 +617,8 @@ SmartPanel {
       width: timerText.width + Style.margin2XL
       height: timerText.height + Style.margin2L
       radius: Style.radiusM
-      color: Color.mSurfaceVariant
-      border.color: Color.mOutline
+      color: root.islandLook ? Look.surface : Color.mSurfaceVariant
+      border.color: root.islandLook ? Look.border : Color.mOutline
       border.width: Style.borderS
       z: 1000
 
@@ -623,7 +628,7 @@ SmartPanel {
         text: pendingAction + " in " + timeRemaining + " seconds..."
         font.weight: Style.fontWeightBold
         pointSize: Style.fontSizeL
-        color: Color.mOnSurfaceVariant
+        color: root.islandLook ? Look.ink : Color.mOnSurfaceVariant
       }
     }
 
@@ -670,7 +675,7 @@ SmartPanel {
       visible: !largeButtonsStyle
       anchors.fill: parent
       anchors.margins: Style.marginL
-      color: Color.mSurfaceVariant
+      color: root.islandLook ? Look.surface : Color.mSurfaceVariant
 
       ColumnLayout {
         anchors.fill: parent
@@ -687,7 +692,7 @@ SmartPanel {
             text: timerActive ? pendingAction + " in " + timeRemaining + " seconds..." : "Session Menu"
             font.weight: Style.fontWeightBold
             pointSize: Style.fontSizeL
-            color: timerActive ? Color.mPrimary : Color.mOnSurface
+            color: timerActive ? Color.mPrimary : (root.islandLook ? Look.ink : Color.mOnSurface)
             Layout.alignment: Qt.AlignVCenter
             verticalAlignment: Text.AlignVCenter
           }
@@ -701,8 +706,8 @@ SmartPanel {
             tooltipText: timerActive ? "Cancel timer" : "Close"
             Layout.alignment: Qt.AlignVCenter
             baseSize: Style.baseWidgetSize * 0.7
-            colorBg: timerActive ? Color.mErrorContainer : "transparent"
-            colorFg: timerActive ? Color.mError : Color.mOnSurface
+            colorBg: timerActive ? Color.mErrorContainer : (root.islandLook ? Look.surfaceHover : "transparent")
+            colorFg: timerActive ? Color.mError : (root.islandLook ? Look.ink : Color.mOnSurface)
             onClicked: {
               if (timerActive) {
                 cancelTimer();
@@ -784,19 +789,31 @@ SmartPanel {
     signal clicked
 
     height: Style.baseWidgetSize * 1.3 * Style.uiScaleRatio
-    radius: Style.radiusS
+    radius: root.islandLook ? Style.radiusM : Style.radiusS
     color: {
       if (pending) {
-        return Color.mPrimaryContainer;
+        return root.islandLook ? Look.statusBad : Color.mPrimaryContainer;
       }
       if (isSelected || effectiveHover) {
-        return Color.mHover;
+        return root.islandLook ? Look.surfaceHover : Color.mHover;
       }
-      return "transparent";
+      // Island idle keeps an opaque card with a hairline outline
+      return root.islandLook ? Look.surface : "transparent";
     }
 
-    border.width: pending ? Math.max(Style.borderM) : 0
-    border.color: pending ? Color.mPrimary : Color.mOutline
+    border.width: {
+      if (root.islandLook) {
+        if (pending)
+          return 0;
+        return (isSelected || effectiveHover) ? 2 : 1;
+      }
+      return pending ? Math.max(Style.borderM) : 0;
+    }
+    border.color: {
+      if (root.islandLook)
+        return (isSelected || effectiveHover) ? Color.mPrimary : Look.border;
+      return pending ? Color.mPrimary : Color.mOutline;
+    }
 
     Behavior on color {
       ColorAnimation {
@@ -818,12 +835,12 @@ SmartPanel {
         icon: buttonRoot.icon
         color: {
           if (buttonRoot.pending)
-            return Color.mPrimary;
+            return root.islandLook ? Look.ink : Color.mPrimary;
           if (buttonRoot.isShutdown && !buttonRoot.isSelected && !buttonRoot.effectiveHover)
-            return Color.mError;
+            return root.islandLook ? Look.statusBad : Color.mError;
           if (buttonRoot.isSelected || buttonRoot.effectiveHover)
-            return Color.mOnHover;
-          return Color.mOnSurface;
+            return root.islandLook ? Look.ink : Color.mOnHover;
+          return root.islandLook ? Look.ink : Color.mOnSurface;
         }
         pointSize: Style.fontSizeXXL
         width: Style.baseWidgetSize * 0.5
@@ -855,7 +872,7 @@ SmartPanel {
           anchors.verticalCenter: parent.verticalCenter
           text: Math.ceil(timeRemaining / 1000)
           pointSize: Style.fontSizeS
-          color: Color.mPrimary
+          color: root.islandLook ? Look.ink : Color.mPrimary
           font.weight: Style.fontWeightBold
         }
 
@@ -868,9 +885,17 @@ SmartPanel {
           width: labelText.implicitWidth + Style.margin2M
           height: labelText.height + Style.margin2XS
           radius: Math.min(Style.radiusM, height / 2)
-          color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mSurface
+          color: {
+            if (root.islandLook)
+              return Look.surfaceHover;
+            return (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mSurface;
+          }
           border.width: Style.borderS
-          border.color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline
+          border.color: {
+            if (root.islandLook)
+              return Look.border;
+            return (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline;
+          }
           visible: Settings.data.sessionMenu.showKeybinds && (buttonRoot.keybind !== "") && !buttonRoot.pending
 
           NText {
@@ -878,7 +903,11 @@ SmartPanel {
             anchors.centerIn: parent
             text: buttonRoot.keybind
             pointSize: Style.fontSizeXS
-            color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mPrimary : Color.mOnSurface
+            color: {
+              if (root.islandLook)
+                return (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mPrimary : Look.ink;
+              return (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mPrimary : Color.mOnSurface;
+            }
 
             Behavior on color {
               ColorAnimation {
@@ -900,17 +929,17 @@ SmartPanel {
         spacing: 0
 
         NText {
-          text: buttonRoot.title
+          text: (buttonRoot.pending && root.islandLook) ? "Confirm" : buttonRoot.title
           font.weight: Style.fontWeightMedium
           pointSize: Style.fontSizeM
           color: {
             if (buttonRoot.pending)
-              return Color.mPrimary;
+              return root.islandLook ? Look.ink : Color.mPrimary;
             if (buttonRoot.isShutdown && !buttonRoot.isSelected && !buttonRoot.effectiveHover)
-              return Color.mError;
+              return root.islandLook ? Look.statusBad : Color.mError;
             if (buttonRoot.isSelected || buttonRoot.effectiveHover)
-              return Color.mOnHover;
-            return Color.mOnSurface;
+              return root.islandLook ? Look.ink : Color.mOnHover;
+            return root.islandLook ? Look.ink : Color.mOnSurface;
           }
 
           Behavior on color {
@@ -969,16 +998,27 @@ SmartPanel {
     radius: Style.radiusL
     color: {
       if (pending) {
-        return Qt.alpha(Color.mPrimary, 1.0);
+        return root.islandLook ? Look.statusBad : Qt.alpha(Color.mPrimary, 1.0);
       }
       if (isSelected || effectiveHover) {
-        return Qt.alpha(Color.mPrimary, 1.0);
+        return root.islandLook ? Look.surfaceHover : Qt.alpha(Color.mPrimary, 1.0);
       }
-      return Color.mSurface;
+      return root.islandLook ? Look.surface : Color.mSurface;
     }
 
-    border.width: Style.borderS
-    border.color: Color.mOutline
+    border.width: {
+      if (root.islandLook) {
+        if (pending)
+          return 0;
+        return (isSelected || effectiveHover) ? 2 : 1;
+      }
+      return Style.borderS;
+    }
+    border.color: {
+      if (root.islandLook)
+        return (isSelected || effectiveHover) ? Color.mPrimary : Look.border;
+      return Color.mOutline;
+    }
 
     // Always enable layer to fix nvidia bug, render at 2x size to avoid blur when scaling up
     layer.enabled: true
@@ -1027,12 +1067,12 @@ SmartPanel {
         icon: largeButtonRoot.icon
         color: {
           if (largeButtonRoot.pending)
-            return Color.mOnPrimary;
+            return root.islandLook ? Look.ink : Color.mOnPrimary;
           if (largeButtonRoot.isShutdown && !largeButtonRoot.isSelected && !largeButtonRoot.effectiveHover)
-            return Color.mError;
+            return root.islandLook ? Look.statusBad : Color.mError;
           if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
-            return Color.mOnPrimary;
-          return Color.mOnSurface;
+            return root.islandLook ? Look.ink : Color.mOnPrimary;
+          return root.islandLook ? Look.ink : Color.mOnSurface;
         }
         pointSize: Style.fontSizeXXXL * 2.25
         width: 90 * Style.uiScaleRatio
@@ -1074,17 +1114,17 @@ SmartPanel {
       // Title text
       NText {
         Layout.alignment: Qt.AlignHCenter
-        text: largeButtonRoot.title
+        text: (largeButtonRoot.pending && root.islandLook) ? "Confirm" : largeButtonRoot.title
         font.weight: Style.fontWeightMedium
         pointSize: Style.fontSizeL
         color: {
           if (largeButtonRoot.pending)
-            return Color.mOnPrimary;
+            return root.islandLook ? Look.ink : Color.mOnPrimary;
           if (largeButtonRoot.isShutdown && !largeButtonRoot.isSelected && !largeButtonRoot.effectiveHover)
-            return Color.mError;
+            return root.islandLook ? Look.statusBad : Color.mError;
           if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
-            return Color.mOnPrimary;
-          return Color.mOnSurface;
+            return root.islandLook ? Look.ink : Color.mOnPrimary;
+          return root.islandLook ? Look.ink : Color.mOnSurface;
         }
 
         Behavior on color {
@@ -1104,9 +1144,17 @@ SmartPanel {
       width: largeNumberText.implicitWidth + Style.margin2M
       height: largeNumberText.implicitHeight + Style.margin2XS
       radius: Math.min(Style.radiusM, height / 2)
-      color: (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Color.mSurfaceContainerHigh
+      color: {
+        if (root.islandLook)
+          return Look.surfaceHover;
+        return (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Color.mSurfaceContainerHigh;
+      }
       border.width: Style.borderS
-      border.color: (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline
+      border.color: {
+        if (root.islandLook)
+          return Look.border;
+        return (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline;
+      }
       visible: Settings.data.sessionMenu.showKeybinds && (largeButtonRoot.keybind !== "") && !largeButtonRoot.pending
       z: 10
 
@@ -1116,6 +1164,8 @@ SmartPanel {
         text: largeButtonRoot.keybind
         pointSize: Style.fontSizeS
         color: {
+          if (root.islandLook)
+            return (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mPrimary : Look.ink;
           if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
             return Color.mPrimary;
           return Color.mOnSurfaceVariant;

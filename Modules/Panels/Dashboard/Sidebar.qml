@@ -144,6 +144,7 @@ Item {
               cursorShape: Qt.PointingHandCursor
               onEntered: {
                 tabItem.hovering = true;
+                root.tabSelected(index);
                 if (!root.expanded) {
                   TooltipService.show(tabItem, I18n.tr(modelData.label));
                 }

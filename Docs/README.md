@@ -5,12 +5,12 @@ and project conventions, see [`../AGENTS.md`](../AGENTS.md).
 
 ## Contents
 
-| Document | What it covers |
-|---|---|
-| [`bar-widgets.md`](bar-widgets.md) | How bar widgets work: what defines a widget, the registry, the render pipeline, settings storage, and interactivity. |
-| [`adding-a-bar-widget.md`](adding-a-bar-widget.md) | Step-by-step guide to adding a new bar widget, with a full template and checklist. |
-| [`desktop-widgets.md`](desktop-widgets.md) | How floating desktop widgets work, including the desktop-vs-bar comparison. |
-| [`adding-a-desktop-widget.md`](adding-a-desktop-widget.md) | Step-by-step guide to adding a new desktop widget, with a full template and checklist. |
+| Document                                                   | What it covers                                                                                                       |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [`bar-widgets.md`](bar-widgets.md)                         | How bar widgets work: what defines a widget, the registry, the render pipeline, settings storage, and interactivity. |
+| [`adding-a-bar-widget.md`](adding-a-bar-widget.md)         | Step-by-step guide to adding a new bar widget, with a full template and checklist.                                   |
+| [`desktop-widgets.md`](desktop-widgets.md)                 | How floating desktop widgets work, including the desktop-vs-bar comparison.                                          |
+| [`adding-a-desktop-widget.md`](adding-a-desktop-widget.md) | Step-by-step guide to adding a new desktop widget, with a full template and checklist.                               |
 
 ## Other references in the repo
 

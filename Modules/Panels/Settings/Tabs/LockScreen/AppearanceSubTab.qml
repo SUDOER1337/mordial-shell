@@ -1,3 +1,13 @@
+// File: Modules/Panels/Settings/Tabs/LockScreen/AppearanceSubTab.qml
+// =============================================================================
+// Lock screen appearance settings. The lock screen uses the island look
+// unconditionally, so the configured options revolve around it: the display
+// clock layout, the album-art wash, cursor animations, and password dots.
+//
+// Functions:
+//   (declarative component) - no imperative logic
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,56 +18,13 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: Style.marginL
-  function insertToken(token) {
-    if (formatInput.inputItem) {
-      var input = formatInput.inputItem;
-      var cursorPos = input.cursorPosition;
-      var currentText = input.text;
-      var newText = currentText.substring(0, cursorPos) + token + currentText.substring(cursorPos);
-      input.text = newText + " ";
-      input.cursorPosition = cursorPos + token.length + 1;
-      input.forceActiveFocus();
-    }
-  }
 
-  NComboBox {
-    label: "Clock style"
-    description: "Choose the visual style of the clock on the lock screen."
-    model: [
-      {
-        "key": "analog",
-        "name": "Analog"
-      },
-      {
-        "key": "digital",
-        "name": "Digital"
-      },
-      {
-        "key": "custom",
-        "name": "Custom"
-      }
-    ]
-    currentKey: Settings.data.general.clockStyle
-    onSelected: key => Settings.data.general.clockStyle = key
-    defaultValue: Settings.getDefaultValue("general.clockStyle")
-    z: 10
-  }
-
-  NTextInput {
-    id: formatInput
-    label: "Clock format"
-    description: "Customize the clock format using date/time syntax tokens."
-    text: Settings.data.general.clockFormat
-    onTextChanged: Settings.data.general.clockFormat = text
-    visible: Settings.data.general.clockStyle === "custom"
-    defaultValue: Settings.getDefaultValue("general.clockFormat")
-  }
-
-  NDateTimeTokens {
+  NToggle {
     Layout.fillWidth: true
-    Layout.preferredHeight: 300
-    visible: Settings.data.general.clockStyle === "custom"
-    onTokenClicked: token => root.insertToken(token)
+    label: "Media on lock"
+    description: "Wash the lock screen with the playing track's cover art."
+    checked: Settings.data.islandLook.mediaOnLock
+    onToggled: checked => Settings.data.islandLook.mediaOnLock = checked
   }
 
   NToggle {
@@ -70,19 +37,10 @@ ColumnLayout {
 
   NToggle {
     label: "Compact lock screen"
-    description: "Show only the login input and system controls, hiding weather and media widgets."
+    description: "Slim readouts: smaller session buttons and a tighter status pill."
     checked: Settings.data.general.compactLockScreen
     onToggled: checked => Settings.data.general.compactLockScreen = checked
     defaultValue: Settings.getDefaultValue("general.compactLockScreen")
-  }
-
-  NToggle {
-    label: "Lock screen media controls"
-    description: "Show interactive media playback controls on the lock screen."
-    checked: Settings.data.general.enableLockScreenMediaControls
-    onToggled: checked => Settings.data.general.enableLockScreenMediaControls = checked
-    visible: !Settings.data.general.compactLockScreen
-    defaultValue: Settings.getDefaultValue("general.enableLockScreenMediaControls")
   }
 
   NToggle {
@@ -91,33 +49,5 @@ ColumnLayout {
     checked: Settings.data.general.lockScreenAnimations
     onToggled: checked => Settings.data.general.lockScreenAnimations = checked
     defaultValue: Settings.getDefaultValue("general.lockScreenAnimations")
-  }
-
-  NValueSlider {
-    Layout.fillWidth: true
-    label: "Lock screen blur strength"
-    description: "Applies a blur effect to the lock screen wallpaper."
-    from: 0.0
-    to: 1.0
-    stepSize: 0.01
-    showReset: true
-    value: Settings.data.general.lockScreenBlur
-    onMoved: value => Settings.data.general.lockScreenBlur = value
-    text: ((Settings.data.general.lockScreenBlur) * 100).toFixed(0) + "%"
-    defaultValue: Settings.getDefaultValue("general.lockScreenBlur")
-  }
-
-  NValueSlider {
-    Layout.fillWidth: true
-    label: "Lock screen tint strength"
-    description: "Applies a tint overlay to the lock screen wallpaper."
-    from: 0.0
-    to: 1.0
-    stepSize: 0.01
-    showReset: true
-    value: Settings.data.general.lockScreenTint
-    onMoved: value => Settings.data.general.lockScreenTint = value
-    text: ((Settings.data.general.lockScreenTint) * 100).toFixed(0) + "%"
-    defaultValue: Settings.getDefaultValue("general.lockScreenTint")
   }
 }

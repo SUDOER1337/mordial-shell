@@ -6,7 +6,7 @@ import Quickshell.Io
 import qs.Commons
 
 // File: Services/Control/PomodoroIPCService.qml
-// Purpose: Registry of live DesktopPomodoro widget instances plus the
+// Purpose: Registry of live Pomodoro widget instances plus the
 //          `pomodoro` IpcHandler target. The pomodoro timer state lives
 //          inside the widget, so this service lets widgets register
 //          themselves and exposes commands that apply to every instance.
@@ -16,7 +16,7 @@ import qs.Commons
 //   unregisterPomodoro(widget) - Remove a destroyed pomodoro widget
 //
 // Helpers:
-//   _keyFor(widget)  - Build a stable "screen:index" registry key
+//   _keyFor(widget)  - Build a stable "screen:section:index" registry key
 //   _allPomodoros()  - Collect every live pomodoro instance
 //   _forEach(m, a)   - Invoke a named method on every live instance
 //   _resolveMode(m)  - Map an IPC mode argument to a mode constant
@@ -36,16 +36,18 @@ Singleton {
   }
 
   /** Build a stable registry key for a pomodoro widget instance.
-  *  @param widget - DesktopPomodoro instance
-  *  @returns The key "screenName:widgetIndex"
+  *  @param widget - Pomodoro widget instance
+  *  @returns The key "screenName:section:widgetIndex"
   */
   function _keyFor(widget) {
     var screenName = widget.screen && widget.screen.name ? widget.screen.name : "unknown";
-    return screenName + ":" + widget.widgetIndex;
+    // Section disambiguates same-index widgets placed in left/center/right.
+    var section = widget.section || "";
+    return screenName + ":" + section + ":" + widget.widgetIndex;
   }
 
   /** Register a live pomodoro widget so IPC commands can reach it.
-  *  @param widget - DesktopPomodoro instance
+  *  @param widget - Pomodoro widget instance
   *  @returns true on success, false when widget is null
   */
   function registerPomodoro(widget) {
@@ -53,22 +55,26 @@ Singleton {
       return false;
     }
     var key = _keyFor(widget);
+    // Remember the key used at registration: sectionWidgetIndex changes when
+    // the bar layout is edited, and unregister must remove the exact entry.
+    widget._pomodoroRegistryKey = key;
     pomodoroRegistry[key] = widget;
     Logger.d("PomodoroIPCService", "Registered pomodoro widget:", key);
     return true;
   }
 
   /** Unregister a pomodoro widget when it is destroyed.
-  *  @param widget - DesktopPomodoro instance
+  *  @param widget - Pomodoro widget instance
   *  @returns true if the instance was removed
   */
   function unregisterPomodoro(widget) {
     if (!widget) {
       return false;
     }
-    var key = _keyFor(widget);
+    var key = widget._pomodoroRegistryKey || _keyFor(widget);
     if (pomodoroRegistry[key] === widget) {
       delete pomodoroRegistry[key];
+      widget._pomodoroRegistryKey = undefined;
       Logger.d("PomodoroIPCService", "Unregistered pomodoro widget:", key);
       return true;
     }
@@ -76,7 +82,7 @@ Singleton {
   }
 
   /** Collect every live pomodoro instance.
-  *  @returns Array of DesktopPomodoro instances
+  *  @returns Array of Pomodoro widget instances
   */
   function _allPomodoros() {
     var list = [];

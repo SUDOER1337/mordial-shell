@@ -1,60 +1,81 @@
-# Credits & Attribution
+# Credits & Fork Notes
 
-## Fork Information
+## Fork Status
 
-**Mordial** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell), which was discontinued after v4 in favor of a C++ rewrite (v5).
+**Mordial** is an independent fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) v4. Noctalia v4 was discontinued in favor of a C++ rewrite (v5); Mordial keeps the original QML-based shell maintained.
 
-**Current Maintainer:** Nullfjord (SUDOER1337)  
-**Maintained at:** https://github.com/SUDOER1337/mordial-shell
+- **Maintainer:** Nullfjord (SUDOER1337)
+- **Repository:** https://github.com/SUDOER1337/mordial-shell
+
+### Maintenance Approach
+
+- **Goals:** keep the QML shell functional, support MangoWC only (via mmsg IPC), fix bugs, add fitting features, preserve existing configs/themes.
+- **Non-goals:** C++/architectural rewrite, competing with Noctalia v5, official support or SLAs.
+
+## Configuration Migration (from Noctalia v4)
+
+Paths changed:
+
+```
+~/.config/noctalia/  →  ~/.config/mordial/
+~/.cache/noctalia/   →  ~/.cache/mordial/
+```
+
+`MORDIAL_CONFIG_DIR` / `MORDIAL_CACHE_DIR` override the defaults. To migrate manually:
+
+```bash
+cp -r ~/.config/noctalia/ ~/.config/mordial/
+cp -r ~/.cache/noctalia/ ~/.cache/mordial/
+```
+
+Then rename scheme names in `settings.json`: `"Noctalia (default)"` → `"Mordial (default)"`, `"Noctalia (legacy)"` → `"Mordial (legacy)"`.
+
+## Upstream Relationship
+
+Mordial runs on **upstream Quickshell**, not the archived `noctalia-qs` fork. Three features are re-applied as build-time patches in `nix/quickshell-patched.nix` (sources in `nix/patches/quickshell/`):
+
+1. `PwAudioSpectrum` — `src/services/pipewire/spectrum.{hpp,cpp}`
+2. `Region` `CornerState` — `src/core/region.{hpp,cpp}`
+3. `QsWindow.flushWaylandState()` — `src/window/proxywindow.{hpp,cpp}`
+
+The vendored `spectrum.*` sources are LGPL-3, same as Quickshell. Bumping the pinned nixpkgs may require rebasing these patches.
 
 ---
 
-## Original Noctalia Project Credits
+## Original Noctalia Credits
 
-Agnoctural Shell is built upon the foundation of Noctalia Shell, made possible by the incredible work of many open-source projects and contributors.
+Mordial is based on Noctalia Shell, made possible by the work of many open-source projects and contributors.
 
-### Design & Branding -- This is not included in Mordial.
+- **[Quickshell](https://github.com/outfoxxed/quickshell)** — the Qt/QML Wayland shell framework
+- **[Noctalia Team & contributors](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors)** — original creators and maintainers
 
-- **MrDowntempo** - Creator of the Noctalia Owl and moon logo
-- **[SaberJ2X](https://www.reddit.com/user/SaberJ64/)** - Creator of Talia, the Noctalia mascot
-
-### Core Framework
-
-- **[Quickshell](https://github.com/outfoxxed/quickshell)** - The Qt/QML-based Wayland shell framework that powers Noctalia and Mordial
-- **[Noctalia Team](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors)** - Original creators and maintainers
+Upstream branding assets (the Noctalia owl/moon logo by MrDowntempo and the Talia mascot by [SaberJ2X](https://www.reddit.com/user/SaberJ64/)) are **not** included in Mordial.
 
 ### Runtime Dependencies
 
-#### System Integration
-- **[brightnessctl](https://github.com/Hummer12007/brightnessctl)** - Screen brightness control
-- **[wlsunset](https://sr.ht/~kennylevinsen/wlsunset/)** - Night light and blue light filter support
-- **[wl-clipboard](https://github.com/bugaevc/wl-clipboard)** - Wayland clipboard utilities
-- **[ddcutil](https://www.ddcutil.com/)** - External display brightness control
-- **[power-profiles-daemon](https://gitlab.freedesktop.org/upower/power-profiles-daemon)** - Power profile management
+- **[brightnessctl](https://github.com/Hummer12007/brightnessctl)** — screen brightness
+- **[ddcutil](https://www.ddcutil.com/)** — external display brightness
+- **[wlsunset](https://sr.ht/~kennylevinsen/wlsunset/)** — night light / blue light filter
+- **[wl-clipboard](https://github.com/bugaevc/wl-clipboard)** — Wayland clipboard
+- **[cliphist](https://github.com/sentriz/cliphist)** — clipboard history
+- **[wlr-randr](https://sr.ht/~emersion/wlr-randr/)** — display configuration
+- **[ImageMagick](https://imagemagick.org/)** — image processing
+- **[wget](https://www.gnu.org/software/wget/)** — downloads
+- **[Python 3](https://www.python.org/)** — theming/calendar helpers
 
-#### Media & Audio
-- **[gpu-screen-recorder](https://git.dec05eba.com/gpu-screen-recorder/about/)** - Hardware-accelerated screen recording
-- **[Cava](https://github.com/karlstav/cava)** - Audio visualizer component
+### Icons & Audio
 
-#### Utilities
-- **[cliphist](https://github.com/sentriz/cliphist)** - Clipboard history support
-
-### Icons
-- **[Tabler Icons](https://tabler.io/icons)** - Icon set used throughout the shell
-- **[Riyan Resdian on Noun Project](https://thenounproject.com/creator/yaicon/)** - Plug icon
-
-### Audio Assets
-- **[Universfield on Pixabay](https://pixabay.com/users/universfield-28281460/)** - Notification sound effect
-- **[DrNI on Freesound](https://freesound.org/people/DrNI/sounds/34562/)** - Timer's alarm sound effect
-- **[Lucas McCallister on Freesound](http://www.freesound.org/samplesViewSingle.php?id=67091)** - Volume change feedback sound effect
+- **[Tabler Icons](https://tabler.io/icons)** — shell icon set
+- **[Riyan Resdian on Noun Project](https://thenounproject.com/creator/yaicon/)** — plug icon
+- **[Universfield on Pixabay](https://pixabay.com/users/universfield-28281460/)** — notification sound
+- **[DrNI on Freesound](https://freesound.org/people/DrNI/sounds/34562/)** — timer alarm sound
+- **[Lucas McCallister on Freesound](http://www.freesound.org/samplesViewSingle.php?id=67091)** — volume-change sound
 
 ## Special Thanks
-- The **Wayland** community for building the future of Linux desktop graphics
-- The **Niri**, **Hyprland**, **Sway**, **Labwc**, and **MangoWC** teams for their excellent Wayland compositors
-- All the original [Noctalia contributors](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors) for building this amazing shell
-- All users and contributors who help maintain and improve Noctalia
+
+- The **Wayland** and **MangoWC** communities
+- All original Noctalia contributors
 
 ## License
-Mordial Shell is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-Each dependency listed above is governed by its own respective license. Please refer to their individual projects for licensing information.
+Mordial Shell is licensed under the MIT License (see [LICENSE](LICENSE)). Each dependency above is governed by its own license.
