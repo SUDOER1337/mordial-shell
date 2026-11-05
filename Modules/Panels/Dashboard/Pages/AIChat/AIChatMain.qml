@@ -33,6 +33,11 @@ Item {
   property bool isLoadingLmStudioModels: false
   property string lmStudioModelLoadError: ""
 
+  // llama.cpp (llama-server) model list
+  property var availableLlamaModels: []
+  property bool isLoadingLlamaModels: false
+  property string llamaModelLoadError: ""
+
   // Cache directory for state
   readonly property string cacheDir: typeof Settings !== 'undefined' && Settings.cacheDir ? Settings.cacheDir + "agnoctural-ai-chat/" : ""
   readonly property string stateCachePath: cacheDir + "state.json"
@@ -58,6 +63,12 @@ Item {
   readonly property real lmStudioTemperature: Settings.data.aiChat?.lmstudio?.temperature || 0.7
   readonly property string lmStudioSystemPrompt: Settings.data.aiChat?.lmstudio?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
 
+  // llama.cpp (llama-server) Settings
+  readonly property string llamaBaseUrl: Settings.data.aiChat?.llama?.baseUrl || "http://localhost:8080/v1/chat/completions"
+  readonly property string llamaModel: Settings.data.aiChat?.llama?.model || ""
+  readonly property real llamaTemperature: Settings.data.aiChat?.llama?.temperature || 0.7
+  readonly property string llamaSystemPrompt: Settings.data.aiChat?.llama?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+
   // Internet Search Settings
   readonly property bool internetSearchEnabled: Settings.data.aiChat?.internetSearch?.enabled || false
   readonly property string internetSearchProvider: Settings.data.aiChat?.internetSearch?.provider || "duckduckgo"
@@ -67,10 +78,10 @@ Item {
   readonly property bool internetSearchFollowUpRephrase: Settings.data.aiChat?.internetSearch?.followUpRephrase || false
 
   // Computed properties for active provider
-  readonly property var availableModels: activeProvider === "ollama" ? availableOllamaModels : availableLmStudioModels
-  readonly property string model: activeProvider === "ollama" ? ollamaModel : lmStudioModel
-  readonly property bool isLoadingModels: activeProvider === "ollama" ? isLoadingOllamaModels : isLoadingLmStudioModels
-  readonly property string modelLoadError: activeProvider === "ollama" ? ollamaModelLoadError : lmStudioModelLoadError
+  readonly property var availableModels: activeProvider === "ollama" ? availableOllamaModels : (activeProvider === "lmstudio" ? availableLmStudioModels : availableLlamaModels)
+  readonly property string model: activeProvider === "ollama" ? ollamaModel : (activeProvider === "lmstudio" ? lmStudioModel : llamaModel)
+  readonly property bool isLoadingModels: activeProvider === "ollama" ? isLoadingOllamaModels : (activeProvider === "lmstudio" ? isLoadingLmStudioModels : isLoadingLlamaModels)
+  readonly property string modelLoadError: activeProvider === "ollama" ? ollamaModelLoadError : (activeProvider === "lmstudio" ? lmStudioModelLoadError : llamaModelLoadError)
 
   Component.onCompleted: {
     Logger.i("AIChat", "AI Chat main instance initialized");
@@ -87,10 +98,14 @@ Item {
       ollamaModelListProcess.running = false;
     if (lmStudioModelListProcess.running)
       lmStudioModelListProcess.running = false;
+    if (llamaModelListProcess.running)
+      llamaModelListProcess.running = false;
     if (ollamaProcess.running)
       ollamaProcess.running = false;
     if (lmStudioProcess.running)
       lmStudioProcess.running = false;
+    if (llamaProcess.running)
+      llamaProcess.running = false;
     if (rephraseProcess.running)
       rephraseProcess.running = false;
     if (webSearchProcess.running)
@@ -209,10 +224,11 @@ Item {
     Logger.i("AIChat", "Chat history cleared");
   }
 
-  // Load models from both providers
+  // Load models from all providers
   function loadAllModels() {
     loadOllamaModels();
     loadLmStudioModels();
+    loadLlamaModels();
   }
 
   // =====================
@@ -439,6 +455,87 @@ Item {
   }
 
   // =====================
+  // llama.cpp Model Loading
+  // =====================
+  function loadLlamaModels() {
+    runLlamaModelLoad();
+  }
+
+  function runLlamaModelLoad() {
+    if (root.isLoadingLlamaModels || llamaModelListProcess.running)
+      return;
+    root.isLoadingLlamaModels = true;
+    root.llamaModelLoadError = "";
+
+    var commandData = ProviderLogic.buildLlamaListCommand(llamaBaseUrl);
+    llamaModelListProcess.command = commandData.args;
+    llamaModelListProcess.running = true;
+  }
+
+  Process {
+    id: llamaModelListProcess
+
+    stdout: StdioCollector {
+      onStreamFinished: {
+        root.isLoadingLlamaModels = false;
+        Logger.i("AIChat", "llama-server: Raw response received, length: " + (text ? text.length : 0));
+
+        if (!text || text.trim() === "") {
+          root.llamaModelLoadError = "No response from llama-server. Ensure server is running.";
+          Logger.e("AIChat", "llama-server: Empty response");
+          return;
+        }
+
+        var result = ProviderLogic.parseLlamaModelList(text);
+        if (result.error) {
+          root.llamaModelLoadError = result.error;
+          Logger.e("AIChat", "llama-server: Failed to load models: " + result.error);
+        } else {
+          root.availableLlamaModels = result.map(function (model) {
+            return model.name;
+          });
+          root.llamaModelLoadError = "";
+          Logger.i("AIChat", "llama-server: Loaded " + root.availableLlamaModels.length + " models");
+        }
+      }
+    }
+
+    stderr: StdioCollector {
+      onStreamFinished: {
+        root.isLoadingLlamaModels = false;
+        if (text && text.trim() !== "") {
+          var stderrText = text.trim();
+          if (stderrText.includes("Connection refused")) {
+            root.llamaModelLoadError = "Connection refused: llama-server is not running.";
+          } else if (stderrText.includes("Failed to connect")) {
+            root.llamaModelLoadError = "Connection failed: Unable to reach llama-server.";
+          } else if (stderrText.includes("timeout")) {
+            root.llamaModelLoadError = "Connection timeout: llama-server not responding.";
+          } else {
+            root.llamaModelLoadError = "Connection error: " + stderrText;
+          }
+          Logger.e("AIChat", "llama-server model list stderr: " + text);
+        }
+      }
+    }
+
+    onExited: function (exitCode, exitStatus) {
+      if (exitCode !== 0) {
+        root.isLoadingLlamaModels = false;
+        if (exitCode === 22) {
+          root.llamaModelLoadError = "HTTP error 404: Invalid llama-server API endpoint.";
+        } else if (exitCode === 7) {
+          root.llamaModelLoadError = "Connection failed: Unable to connect to llama-server.";
+        } else if (exitCode === 28) {
+          root.llamaModelLoadError = "Connection timeout: llama-server not responding.";
+        } else {
+          root.llamaModelLoadError = "llama-server not running (exit code: " + exitCode + ").";
+        }
+      }
+    }
+  }
+
+  // =====================
   // Chat Functions
   // =====================
 
@@ -450,7 +547,7 @@ Item {
     if (root.isGenerating)
       return;
 
-    var currentModel = activeProvider === "ollama" ? ollamaModel : lmStudioModel;
+    var currentModel = activeProvider === "ollama" ? ollamaModel : (activeProvider === "lmstudio" ? lmStudioModel : llamaModel);
     if (!currentModel || currentModel.trim() === "") {
       root.errorMessage = "Please select a model in settings";
       ToastService.showError(root.errorMessage);
@@ -525,8 +622,10 @@ Item {
 
       if (activeProvider === "ollama")
         sendOllamaRequest();
-      else
+      else if (activeProvider === "lmstudio")
         sendLmStudioRequest();
+      else
+        sendLlamaRequest();
     }
   }
 
@@ -545,6 +644,8 @@ Item {
       ollamaProcess.running = false;
     if (lmStudioProcess.running)
       lmStudioProcess.running = false;
+    if (llamaProcess.running)
+      llamaProcess.running = false;
 
     root.isGenerating = false;
     root.isRephrasing = false;
@@ -733,6 +834,90 @@ Item {
     lmStudioProcess.buffer = "";
     lmStudioProcess.command = commandData.args;
     lmStudioProcess.running = true;
+  }
+
+  // =====================
+  // llama.cpp API Process
+  // =====================
+  Process {
+    id: llamaProcess
+    property string buffer: ""
+
+    stdout: SplitParser {
+      onRead: function (data) {
+        llamaProcess.handleStreamData(data);
+      }
+    }
+
+    stderr: StdioCollector {
+      onStreamFinished: {
+        if (text && text.trim() !== "") {
+          var stderrText = text.trim();
+          if (stderrText.includes("Connection refused")) {
+            root.errorMessage = "Connection refused: llama-server is not running.";
+          } else if (stderrText.includes("Failed to connect")) {
+            root.errorMessage = "Connection failed: Unable to reach llama-server.";
+          } else if (stderrText.includes("timeout")) {
+            root.errorMessage = "Connection timeout: llama-server not responding.";
+          } else {
+            root.errorMessage = "llama-server error: " + stderrText;
+          }
+          Logger.e("AIChat", "llama-server stderr: " + text);
+        }
+      }
+    }
+
+    function handleStreamData(data) {
+      var result = ProviderLogic.parseLlamaStream(data);
+      if (!result)
+        return;
+
+      if (result.content) {
+        root.currentResponse += result.content;
+      } else if (result.error) {
+        Logger.e("AIChat", "llama-server stream error: " + result.error);
+      } else if (result.raw) {
+        llamaProcess.buffer += result.raw;
+        try {
+          var errorJson = JSON.parse(llamaProcess.buffer);
+          if (errorJson.error)
+            root.errorMessage = errorJson.error.message || "API error";
+          llamaProcess.buffer = "";
+        } catch (e) {}
+      }
+    }
+
+    onExited: function (exitCode, exitStatus) {
+      if (root.isManuallyStopped) {
+        root.isManuallyStopped = false;
+        return;
+      }
+      root.isGenerating = false;
+
+      if (exitCode !== 0 && root.currentResponse === "") {
+        if (root.errorMessage === "")
+          root.errorMessage = "llama-server not running or request failed";
+        return;
+      }
+
+      if (root.currentResponse.trim() !== "") {
+        root.addMessage("assistant", root.currentResponse.trim());
+      }
+      root.chatInputText = "";
+      root.chatInputCursorPosition = 0;
+      root.saveState();
+      llamaProcess.buffer = "";
+    }
+  }
+
+  function sendLlamaRequest(customSystemPrompt) {
+    var systemPrompt = customSystemPrompt || llamaSystemPrompt;
+    var history = buildConversationHistory();
+    var commandData = ProviderLogic.buildLlamaCommand(llamaBaseUrl, llamaModel, systemPrompt, history, llamaTemperature);
+    Logger.i("AIChat", "sendLlamaRequest: endpoint=" + commandData.url);
+    llamaProcess.buffer = "";
+    llamaProcess.command = commandData.args;
+    llamaProcess.running = true;
   }
 
   // =====================

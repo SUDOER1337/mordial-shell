@@ -33,6 +33,12 @@ ColumnLayout {
   property real editLmStudioTemperature: Settings.data.aiChat?.lmstudio?.temperature || 0.7
   property string editLmStudioSystemPrompt: Settings.data.aiChat?.lmstudio?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
 
+  // llama.cpp settings - local state
+  property string editLlamaBaseUrl: Settings.data.aiChat?.Llama?.baseUrl || "http://localhost:8080"
+  property string editLlamaModel: Settings.data.aiChat?.Llama?.model || ""
+  property real editLlamaTemperature: Settings.data.aiChat?.Llama?.temperature || 0.7
+  property string editLlamaSystemPrompt: Settings.data.aiChat?.Llama?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+
   // General Settings
   property int editMaxHistoryLength: Settings.data.aiChat?.maxHistoryLength || 100
 

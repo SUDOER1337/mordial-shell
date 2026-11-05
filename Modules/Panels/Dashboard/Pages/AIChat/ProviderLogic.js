@@ -670,3 +670,175 @@ function buildEnhancedSystemPrompt(basePrompt, results, query) {
 
   return enhancedPrompt;
 }
+
+// ===================================
+// llama.cpp Provider Logic
+// ===================================
+
+function normalizeChatEndpoint(baseUrl) {
+  var endpoint = (baseUrl || "").trim();
+  if (endpoint === "") {
+    return "http://localhost:8080/v1/chat/completions";
+  }
+
+  if (endpoint.includes("/v1/chat/completions")) {
+    return endpoint;
+  }
+
+  if (endpoint.endsWith("/")) {
+    return endpoint + "v1/chat/completions";
+  }
+  return endpoint + "/v1/chat/completions";
+}
+
+function normalizeModelsEndpoint(baseUrl) {
+  var endpoint = (baseUrl || "").trim();
+  if (endpoint === "") {
+    return "http://localhost:8080/v1/models";
+  }
+
+  if (endpoint.includes("/v1/models")) {
+    return endpoint;
+  }
+
+  if (endpoint.includes("/v1/chat/completions")) {
+    return endpoint.replace("/v1/chat/completions", "/v1/models");
+  }
+
+  if (endpoint.endsWith("/")) {
+    return endpoint + "v1/models";
+  }
+  return endpoint + "/v1/models";
+}
+
+function buildLlamaCommand(baseUrl, model, systemPrompt, history, temperature) {
+  var messages = [];
+
+  if (systemPrompt && systemPrompt.trim() !== "") {
+    messages.push({
+      "role": "system",
+      "content": systemPrompt
+    });
+  }
+
+  for (var i = 0; i < history.length; i++) {
+    messages.push(history[i]);
+  }
+
+  var payload = {
+    "model": model,
+    "messages": messages,
+    "temperature": temperature,
+    "stream": true
+  };
+
+  var endpoint = normalizeChatEndpoint(baseUrl);
+  var args = ["curl", "-s", "-S", "--no-buffer", "-X", "POST", "-H", "Content-Type: application/json"];
+  args.push("-d", JSON.stringify(payload));
+  args.push(endpoint);
+
+  return {
+    "url": endpoint,
+    "payload": JSON.stringify(payload),
+    "args": args
+  };
+}
+
+function parseLlamaStream(data) {
+  if (!data)
+    return null;
+  var line = data.trim();
+  if (line === "")
+    return null;
+
+  try {
+    if (line.startsWith("data: ")) {
+      var jsonStr = line.substring(6).trim();
+      if (jsonStr === "[DONE]")
+        return {
+          done: true
+        };
+      var json = JSON.parse(jsonStr);
+      if (json.choices && json.choices[0]) {
+        if (json.choices[0].delta && json.choices[0].delta.content) {
+          return {
+            content: json.choices[0].delta.content
+          };
+        }
+        if (json.choices[0].message && json.choices[0].message.content) {
+          return {
+            content: json.choices[0].message.content
+          };
+        }
+      }
+    } else {
+      var directJson = JSON.parse(line);
+      if (directJson.choices && directJson.choices[0]) {
+        if (directJson.choices[0].delta && directJson.choices[0].delta.content) {
+          return { content: directJson.choices[0].delta.content };
+        }
+        if (directJson.choices[0].message && directJson.choices[0].message.content) {
+          return { content: directJson.choices[0].message.content };
+        }
+      }
+    }
+  } catch (e) {
+    return { raw: line };
+  }
+
+  return { raw: line };
+}
+
+// ===================================
+// llama.cpp Model Discovery
+// ===================================
+
+function buildLlamaListCommand(baseUrl) {
+  var endpoint = baseUrl.trim();
+  if (!endpoint.endsWith("/v1/models")) {
+    if (endpoint.endsWith("/")) {
+      endpoint = endpoint + "v1/models";
+    } else {
+      endpoint = endpoint + "/v1/models";
+    }
+  }
+
+  return {
+    "args": ["curl", "-s", "-S", "--connect-timeout", "3", "--max-time", "10", "-f", endpoint]
+  };
+}
+
+function parseLlamaModelList(responseText) {
+  if (!responseText || typeof responseText !== 'string') {
+    return { error: "Invalid response text" };
+  }
+
+  try {
+    var response = JSON.parse(responseText.trim());
+    if (!response || typeof response !== 'object') {
+      return { error: "Invalid response structure" };
+    }
+
+    if (!response.data || !Array.isArray(response.data)) {
+      return { error: "No data array in response" };
+    }
+
+    return response.data.map(function(model) {
+      if (!model || !model.id) {
+        return null;
+      }
+      return {
+        name: model.id,
+        display: model.id,
+        tag: model.parameter_size ? (model.parameter_size / 1e9).toFixed(2) + "B" : "default",
+        size: model.size || 0,
+        modified: model.created_at || ""
+      };
+    }).filter(function(model) { return model !== null; });
+
+  } catch (e) {
+    return {
+      error: "Failed to parse model list: " + (e.toString() || "Unknown error")
+    };
+  }
+}

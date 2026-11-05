@@ -172,7 +172,7 @@ in
           };
         }
       '';
-description = ''
+      description = ''
         Each plugin's settings as an attribute set, string
         or filepath, to be written to ~/.config/mordial/plugins/plugin-name/settings.json.
       '';
@@ -208,7 +208,6 @@ description = ''
         source = generateJson "${name}-settings" value;
       }
     ) cfg.pluginSettings;
-
 
   };
 }

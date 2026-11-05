@@ -283,3 +283,16 @@ When a scheme file only has 16 base tokens (missing the 14 derived ones):
 2. **QML Only**: No C++ rewrites; architecture is QML-based by design.
 3. **Wayland Only**: X11 is not supported.
 4. **Not a Full DE**: Handles shell UI only—file manager, settings daemon, window manager, greeter are external.
+
+---
+
+## Keyboard Navigation (Vim-style)
+
+Mordial uses a keyboard-first interaction model. See `Plans/VIM.md` for details on:
+
+- **Modes**: Normal Mode (navigation) and Insert Mode (text entry)
+- **Focus/Selection**: Independent concepts for input regions and highlighted items
+- **Keybindings**: `j/k` navigate vertically, `h/l` navigate horizontally (tabs), `i/a` enter Insert Mode, `Enter` activate, `Esc` cancel/close
+- **Shared Principles**: Consistent navigation across launcher, powermenu, notification center, session menu
+
+Components should implement this as a reusable interaction system, not duplicate key handling.
