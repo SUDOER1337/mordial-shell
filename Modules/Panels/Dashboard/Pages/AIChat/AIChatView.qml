@@ -51,14 +51,14 @@ Item {
       Rectangle {
         Layout.preferredWidth: providerLabel.width + Style.marginM * 2
         Layout.preferredHeight: providerLabel.height + Style.marginS * 2
-        color: root.activeProvider === "ollama" ? "#00AA00" : "#0066CC"
+        color: root.activeProvider === "ollama" ? "#00AA00" : (root.activeProvider === "lmstudio" ? "#0066CC" : "#B85C00")
         radius: Style.radiusS
         opacity: 0.9
 
         NText {
           id: providerLabel
           anchors.centerIn: parent
-          text: root.activeProvider === "ollama" ? "Ollama" : "LM Studio"
+          text: root.activeProvider === "ollama" ? "Ollama" : (root.activeProvider === "lmstudio" ? "LM Studio" : "llama.cpp")
           color: "white"
           pointSize: Style.fontSizeXS
           font.weight: Font.Bold
@@ -153,6 +153,8 @@ Item {
               mainInstance.loadOllamaModels();
             } else if (root.activeProvider === "lmstudio" && mainInstance.loadLmStudioModels) {
               mainInstance.loadLmStudioModels();
+            } else if (root.activeProvider === "llama" && mainInstance.loadLlamaModels) {
+              mainInstance.loadLlamaModels();
             }
           }
         }

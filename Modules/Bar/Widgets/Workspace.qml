@@ -58,6 +58,18 @@ Item {
     return Style.fontWeightBold;
   }
   readonly property bool hideUnoccupied: (widgetSettings.hideUnoccupied !== undefined) ? widgetSettings.hideUnoccupied : widgetMetadata.hideUnoccupied
+  // Workspace indices or names to hide, e.g. ["3", "stash"]. Matched
+  // case-insensitively against both idx and name so it works with named
+  // niri workspaces as well as MangoWC tags.
+  readonly property var hiddenWorkspaces: {
+    const raw = (widgetSettings.hiddenWorkspaces !== undefined) ? widgetSettings.hiddenWorkspaces : widgetMetadata.hiddenWorkspaces;
+    if (!raw)
+      return [];
+    if (Array.isArray(raw))
+      return raw;
+    // Tolerate a comma-separated string from older/hand-edited configs.
+    return String(raw).split(",");
+  }
   readonly property bool followFocusedScreen: (widgetSettings.followFocusedScreen !== undefined) ? widgetSettings.followFocusedScreen : widgetMetadata.followFocusedScreen
   readonly property int characterCount: {
     const count = (widgetSettings.characterCount !== undefined) ? widgetSettings.characterCount : widgetMetadata.characterCount;
@@ -287,6 +299,7 @@ Item {
   onScreenChanged: scheduleRefresh()
   onScreenNameChanged: scheduleRefresh()
   onHideUnoccupiedChanged: scheduleRefresh()
+  onHiddenWorkspacesChanged: scheduleRefresh()
   onAppVisibleChanged: {
     if (appVisible) {
       scheduleRefresh();
@@ -320,6 +333,23 @@ Item {
     }
   }
 
+  // Check whether a workspace matches an entry in the hide list.
+  function isWorkspaceHidden(ws) {
+    const tokens = hiddenWorkspaces;
+    if (!ws || !tokens || tokens.length === 0)
+      return false;
+    const idx = String(ws.idx !== undefined && ws.idx !== null ? ws.idx : "");
+    const name = String(ws.name !== undefined && ws.name !== null ? ws.name : "").toLowerCase();
+    for (var i = 0; i < tokens.length; i++) {
+      const token = String(tokens[i]).trim().toLowerCase();
+      if (token === "")
+        continue;
+      if (token === idx || (name !== "" && token === name))
+        return true;
+    }
+    return false;
+  }
+
   function refreshWorkspaces() {
     var targetList = [];
     var focusedOutput = null;
@@ -339,6 +369,9 @@ Item {
         const matchesScreen = (followFocusedScreen && ws.output.toLowerCase() == focusedOutput) || (!followFocusedScreen && ws.output.toLowerCase() == screenName);
 
         if (!matchesScreen)
+          continue;
+        // Explicit hide list wins over everything else, including focus.
+        if (isWorkspaceHidden(ws))
           continue;
         if (hideUnoccupied && !ws.isOccupied && !ws.isFocused)
           continue;

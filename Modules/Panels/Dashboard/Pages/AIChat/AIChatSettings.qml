@@ -34,10 +34,10 @@ ColumnLayout {
   property string editLmStudioSystemPrompt: Settings.data.aiChat?.lmstudio?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
 
   // llama.cpp settings - local state
-  property string editLlamaBaseUrl: Settings.data.aiChat?.Llama?.baseUrl || "http://localhost:8080"
-  property string editLlamaModel: Settings.data.aiChat?.Llama?.model || ""
-  property real editLlamaTemperature: Settings.data.aiChat?.Llama?.temperature || 0.7
-  property string editLlamaSystemPrompt: Settings.data.aiChat?.Llama?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+  property string editLlamaBaseUrl: Settings.data.aiChat?.llama?.baseUrl || "http://localhost:8080"
+  property string editLlamaModel: Settings.data.aiChat?.llama?.model || ""
+  property real editLlamaTemperature: Settings.data.aiChat?.llama?.temperature || 0.7
+  property string editLlamaSystemPrompt: Settings.data.aiChat?.llama?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
 
   // General Settings
   property int editMaxHistoryLength: Settings.data.aiChat?.maxHistoryLength || 100
@@ -75,6 +75,10 @@ ColumnLayout {
   onEditLmStudioModelChanged: root.scheduleSave()
   onEditLmStudioTemperatureChanged: root.scheduleSave()
   onEditLmStudioSystemPromptChanged: root.scheduleSave()
+  onEditLlamaBaseUrlChanged: root.scheduleSave()
+  onEditLlamaModelChanged: root.scheduleSave()
+  onEditLlamaTemperatureChanged: root.scheduleSave()
+  onEditLlamaSystemPromptChanged: root.scheduleSave()
   onEditMaxHistoryLengthChanged: root.scheduleSave()
   onEditInternetSearchEnabledChanged: root.scheduleSave()
   onEditInternetSearchProviderChanged: root.scheduleSave()
@@ -109,6 +113,10 @@ ColumnLayout {
       {
         "key": "lmstudio",
         "name": "LM Studio"
+      },
+      {
+        "key": "llama",
+        "name": "llama.cpp (llama-server)"
       }
     ]
     currentKey: root.editActiveProvider
@@ -556,6 +564,214 @@ ColumnLayout {
   }
 
   // ==================
+  // llama.cpp Settings Section
+  // ==================
+  NText {
+    text: "llama.cpp Settings"
+    pointSize: Style.fontSizeM
+    font.weight: Font.Bold
+    color: Color.mOnSurface
+  }
+
+  NTextInput {
+    Layout.fillWidth: true
+    label: "llama-server URL"
+    description: "Base URL of your llama.cpp server (default port 8080). /v1/chat/completions is appended automatically."
+    text: root.editLlamaBaseUrl
+    placeholderText: "http://localhost:8080"
+    onTextChanged: root.editLlamaBaseUrl = text
+  }
+
+  // llama.cpp connection test
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.marginS
+
+    NButton {
+      text: "Test llama.cpp Connection"
+      onClicked: testLlamaConnection()
+    }
+
+    NText {
+      id: llamaConnectionStatus
+      visible: text !== ""
+      color: llamaConnectionSuccess ? Color.mPrimary : Color.mError
+      pointSize: Style.fontSizeXS
+      wrapMode: Text.WordWrap
+      Layout.fillWidth: true
+    }
+  }
+
+  property bool llamaConnectionSuccess: false
+  property bool isTestingLlamaConnection: false
+
+  function testLlamaConnection() {
+    llamaConnectionStatus.text = "Testing llama.cpp connection...";
+    llamaConnectionStatus.visible = true;
+    isTestingLlamaConnection = true;
+    llamaConnectionSuccess = false;
+
+    var endpoint = root.editLlamaBaseUrl.trim();
+    if (endpoint === "")
+      endpoint = "http://localhost:8080";
+    endpoint = endpoint.replace(/\/+$/, "");
+    if (!endpoint.includes("/v1/models"))
+      endpoint += endpoint.endsWith("/v1") ? "/models" : "/v1/models";
+
+    llamaTestProcess.command = ["curl", "-s", "-S", "--connect-timeout", "5", "--max-time", "10", "-f", endpoint];
+    llamaTestProcess.running = true;
+  }
+
+  Process {
+    id: llamaTestProcess
+
+    stdout: StdioCollector {
+      onStreamFinished: {
+        isTestingLlamaConnection = false;
+        try {
+          var response = JSON.parse(text);
+          if (response.data && Array.isArray(response.data)) {
+            if (response.data.length > 0) {
+              llamaConnectionStatus.text = "Connected! Found " + response.data.length + " model(s).";
+              llamaConnectionSuccess = true;
+            } else {
+              llamaConnectionStatus.text = "Connected but no model is loaded.";
+              llamaConnectionSuccess = true;
+            }
+          } else {
+            llamaConnectionStatus.text = "Connected but response format unexpected.";
+            llamaConnectionSuccess = true;
+          }
+        } catch (e) {
+          llamaConnectionStatus.text = "No response from server.";
+          llamaConnectionSuccess = false;
+        }
+      }
+    }
+
+    stderr: StdioCollector {
+      onStreamFinished: {
+        if (text && text.trim() !== "") {
+          var stderrText = text.trim();
+          if (stderrText.includes("Connection refused")) {
+            llamaConnectionStatus.text = "Connection refused. Is llama-server running?";
+          } else if (stderrText.includes("Failed to connect")) {
+            llamaConnectionStatus.text = "Failed to connect to " + root.editLlamaBaseUrl;
+          } else if (stderrText.includes("timeout")) {
+            llamaConnectionStatus.text = "Connection timeout.";
+          } else {
+            llamaConnectionStatus.text = "Error: " + stderrText;
+          }
+          isTestingLlamaConnection = false;
+          llamaConnectionSuccess = false;
+        }
+      }
+    }
+
+    onExited: function (exitCode, exitStatus) {
+      if (exitCode !== 0 && llamaConnectionStatus.text === "") {
+        isTestingLlamaConnection = false;
+        if (exitCode === 22)
+          llamaConnectionStatus.text = "Invalid URL (404 error).";
+        else if (exitCode === 7)
+          llamaConnectionStatus.text = "Failed to connect. Is llama-server running?";
+        else if (exitCode === 28)
+          llamaConnectionStatus.text = "Connection timeout.";
+        else
+          llamaConnectionStatus.text = "Connection failed (code: " + exitCode + ").";
+        llamaConnectionSuccess = false;
+      }
+    }
+  }
+
+  // llama.cpp Model selection
+  NComboBox {
+    id: llamaModelComboBox
+    Layout.fillWidth: true
+    label: "llama.cpp Model"
+    description: "Select the llama.cpp model to use"
+    model: []
+    currentKey: root.editLlamaModel
+    onSelected: function (key) {
+      root.editLlamaModel = key;
+    }
+    enabled: false
+  }
+
+  RowLayout {
+    Layout.fillWidth: true
+    spacing: Style.marginS
+
+    NButton {
+      text: "Refresh llama.cpp Models"
+      onClicked: {
+        ToastService.showNotice("Open AI Chat panel to refresh models");
+      }
+    }
+  }
+
+  // llama.cpp Temperature
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.marginS
+
+    NLabel {
+      label: "llama.cpp Temperature: " + root.editLlamaTemperature.toFixed(1)
+      description: "Controls randomness in llama.cpp responses"
+    }
+
+    NSlider {
+      Layout.fillWidth: true
+      from: 0
+      to: 2
+      stepSize: 0.1
+      value: root.editLlamaTemperature
+      onValueChanged: root.editLlamaTemperature = value
+    }
+  }
+
+  // llama.cpp System Prompt
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.marginS
+
+    NLabel {
+      label: "llama.cpp System Prompt"
+      description: "Instructions for the llama.cpp AI assistant"
+    }
+
+    Rectangle {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 80
+      color: Color.mSurface
+      radius: Style.radiusS
+      border.color: Color.mOutline
+      border.width: 1
+
+      ScrollView {
+        anchors.fill: parent
+        anchors.margins: Style.marginS
+
+        TextArea {
+          text: root.editLlamaSystemPrompt
+          placeholderText: "Enter system prompt for llama.cpp..."
+          color: Color.mOnSurface
+          font.pointSize: Style.fontSizeS
+          wrapMode: TextArea.Wrap
+          background: null
+          onTextChanged: root.editLlamaSystemPrompt = text
+        }
+      }
+    }
+  }
+
+  NDivider {
+    Layout.fillWidth: true
+    Layout.topMargin: Style.marginM
+    Layout.bottomMargin: Style.marginM
+  }
+
+  // ==================
   // Internet Search Settings
   // ==================
   NText {
@@ -718,6 +934,12 @@ ColumnLayout {
     Settings.data.aiChat.lmstudio.model = root.editLmStudioModel;
     Settings.data.aiChat.lmstudio.temperature = root.editLmStudioTemperature;
     Settings.data.aiChat.lmstudio.systemPrompt = root.editLmStudioSystemPrompt;
+
+    // Save llama.cpp settings
+    Settings.data.aiChat.llama.baseUrl = root.editLlamaBaseUrl;
+    Settings.data.aiChat.llama.model = root.editLlamaModel;
+    Settings.data.aiChat.llama.temperature = root.editLlamaTemperature;
+    Settings.data.aiChat.llama.systemPrompt = root.editLlamaSystemPrompt;
 
     // Save general settings
     Settings.data.aiChat.maxHistoryLength = root.editMaxHistoryLength;

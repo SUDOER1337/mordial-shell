@@ -48,7 +48,7 @@ Singleton {
   - Default cache directory: ~/.cache/mordial
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 61
+  readonly property int settingsVersion: 62
   property bool isDebug: Quickshell.env("MORDIAL_DEBUG") === "1"
   readonly property string shellName: "mordial"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("MORDIAL_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -863,6 +863,12 @@ Singleton {
         property real temperature: 0.7
         property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
       }
+      property JsonObject llama: JsonObject {
+        property string baseUrl: "http://localhost:8080"
+        property string model: ""
+        property real temperature: 0.7
+        property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+      }
       property JsonObject internetSearch: JsonObject {
         property bool enabled: false
         property string provider: "duckduckgo"
@@ -1283,6 +1289,10 @@ Singleton {
       delete raw.islandLook;
       Logger.i("Settings", "Removed malformed 'islandLook' settings section");
     }
+
+    // v62: aiChat.llama section added for llama.cpp (llama-server). This is a
+    // new section only, so no key rename is required — the typed adapter fills
+    // missing keys from its declared defaults on load.
   }
 
   // -----------------------------------------------------

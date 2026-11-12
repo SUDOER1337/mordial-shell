@@ -590,6 +590,12 @@
       "temperature": 0.7,
       "systemPrompt": "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
     },
+    "llama": {
+      "baseUrl": "http://localhost:8080",
+      "model": "",
+      "temperature": 0.7,
+      "systemPrompt": "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
+    },
     "internetSearch": {
       "enabled": false,
       "provider": "duckduckgo",

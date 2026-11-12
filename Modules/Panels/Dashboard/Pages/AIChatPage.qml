@@ -1,5 +1,5 @@
 /*
-* AI Chat page for Agnoctural Shell
+* AI Chat page for Mordial Shell
 * Adapted from unified-ai-panel plugin
 * Original author: SUDOER1337 (based on j-1in's work)
 * Repository: https://github.com/noctalia-dev/noctalia-plugins

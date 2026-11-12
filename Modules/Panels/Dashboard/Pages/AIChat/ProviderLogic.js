@@ -372,9 +372,10 @@ function prepareStateForSave(messages, activeTab, maxHistory, chatInputText, cha
 // Web Search: Rephrase Follow-up
 // ===================================
 
-function buildRephraseCommand(baseUrl, model, chatHistory, question) {
+function buildRephraseCommand(baseUrl, model, chatHistory, question, openAICompat) {
   var endpoint = baseUrl.trim();
-  var isOpenAICompat = endpoint.includes("/v1/chat/completions");
+  // Providers other than Ollama expose an OpenAI-compatible chat endpoint.
+  var isOpenAICompat = typeof openAICompat === "boolean" ? openAICompat : endpoint.includes("/v1/chat/completions");
 
   var chatHistoryText = "";
   for (var i = 0; i < chatHistory.length; i++) {
@@ -415,6 +416,10 @@ function buildRephraseCommand(baseUrl, model, chatHistory, question) {
     } else if (!endpoint.includes("/api/chat")) {
       endpoint = endpoint + "/api/chat";
     }
+  } else if (!endpoint.includes("/v1/chat/completions")) {
+    // OpenAI-compatible base URLs may be given as host:port or .../v1.
+    endpoint = endpoint.replace(/\/+$/, "");
+    endpoint += endpoint.endsWith("/v1") ? "/chat/completions" : "/v1/chat/completions";
   }
 
   var args = ["curl", "-s", "-S", "--connect-timeout", "10", "--max-time", "15",
@@ -675,7 +680,10 @@ function buildEnhancedSystemPrompt(basePrompt, results, query) {
 // llama.cpp Provider Logic
 // ===================================
 
-function normalizeChatEndpoint(baseUrl) {
+// Named distinctly from the LM Studio helpers above: this file is a single
+// script namespace, so redeclaring normalizeChatEndpoint here would silently
+// override the LM Studio version (function declarations hoist, last wins).
+function normalizeLlamaChatEndpoint(baseUrl) {
   var endpoint = (baseUrl || "").trim();
   if (endpoint === "") {
     return "http://localhost:8080/v1/chat/completions";
@@ -685,13 +693,18 @@ function normalizeChatEndpoint(baseUrl) {
     return endpoint;
   }
 
+  // Tolerate a base URL that already ends in the API root.
+  if (endpoint.endsWith("/v1")) {
+    return endpoint + "/chat/completions";
+  }
+
   if (endpoint.endsWith("/")) {
     return endpoint + "v1/chat/completions";
   }
   return endpoint + "/v1/chat/completions";
 }
 
-function normalizeModelsEndpoint(baseUrl) {
+function normalizeLlamaModelsEndpoint(baseUrl) {
   var endpoint = (baseUrl || "").trim();
   if (endpoint === "") {
     return "http://localhost:8080/v1/models";
@@ -703,6 +716,10 @@ function normalizeModelsEndpoint(baseUrl) {
 
   if (endpoint.includes("/v1/chat/completions")) {
     return endpoint.replace("/v1/chat/completions", "/v1/models");
+  }
+
+  if (endpoint.endsWith("/v1")) {
+    return endpoint + "/models";
   }
 
   if (endpoint.endsWith("/")) {
@@ -732,7 +749,7 @@ function buildLlamaCommand(baseUrl, model, systemPrompt, history, temperature) {
     "stream": true
   };
 
-  var endpoint = normalizeChatEndpoint(baseUrl);
+  var endpoint = normalizeLlamaChatEndpoint(baseUrl);
   var args = ["curl", "-s", "-S", "--no-buffer", "-X", "POST", "-H", "Content-Type: application/json"];
   args.push("-d", JSON.stringify(payload));
   args.push(endpoint);
@@ -794,14 +811,7 @@ function parseLlamaStream(data) {
 // ===================================
 
 function buildLlamaListCommand(baseUrl) {
-  var endpoint = baseUrl.trim();
-  if (!endpoint.endsWith("/v1/models")) {
-    if (endpoint.endsWith("/")) {
-      endpoint = endpoint + "v1/models";
-    } else {
-      endpoint = endpoint + "/v1/models";
-    }
-  }
+  var endpoint = normalizeLlamaModelsEndpoint(baseUrl);
 
   return {
     "args": ["curl", "-s", "-S", "--connect-timeout", "3", "--max-time", "10", "-f", endpoint]

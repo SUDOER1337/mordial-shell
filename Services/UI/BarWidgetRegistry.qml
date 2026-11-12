@@ -321,6 +321,7 @@ Singleton {
                                     "labelMode": "index",
                                     "followFocusedScreen": false,
                                     "hideUnoccupied": false,
+                                    "hiddenWorkspaces": [],
                                     "characterCount": 2,
                                     "showApplications": false,
                                     "showApplicationsHover": false,

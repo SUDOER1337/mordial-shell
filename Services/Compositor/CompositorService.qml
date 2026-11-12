@@ -64,6 +64,15 @@ Singleton {
     property string lastWindowSignature: ""
     property string lastWorkspaceSignature: ""
 
+    // Niri: window count per workspace id, derived from `niri msg --json windows`.
+    // Niri's workspace JSON has no occupancy field (only active_window_id), so
+    // this map is the authoritative source for the "occupied" pill state.
+    property var niriWindowCounts: ({})
+
+    // Niri: last raw workspaces payload. Cached so occupancy can be recomputed
+    // when the window list arrives or changes, without re-querying niri.
+    property var lastNiriWorkspaces: []
+
     // ===== REBUILD WORKSPACES FROM MMSG DATA =====
 
     function rebuildWorkspaces() {
@@ -184,11 +193,16 @@ Singleton {
       if (!workspacesData)
         return;
       const wsList = Array.isArray(workspacesData) ? workspacesData : (workspacesData.workspaces || []);
+      internal.lastNiriWorkspaces = wsList;
       const list = [];
       for (let i = 0; i < wsList.length; i++) {
         const ws = wsList[i];
         const idx = ws.idx !== undefined ? ws.idx : (ws.id !== undefined ? ws.id : i + 1);
         const output = ws.output || ws.monitor || "";
+        // Occupancy: prefer the count derived from `niri msg windows`. Fall back
+        // to active_window_id while the window list has not been loaded yet.
+        const windowCount = internal.niriWindowCounts[String(ws.id)] || 0;
+        const hasActiveWindow = ws.active_window_id !== undefined && ws.active_window_id !== null;
         list.push({
                     id: ws.id !== undefined ? ws.id : idx,
                     idx: idx,
@@ -197,7 +211,7 @@ Singleton {
                     isActive: !!(ws.is_active || ws.active || ws.focused),
                     isFocused: !!(ws.is_focused || ws.focused || ws.is_active),
                     isUrgent: !!ws.is_urgent,
-                    isOccupied: !!(ws.windows_count > 0 || ws.occupied)
+                    isOccupied: windowCount > 0 || hasActiveWindow
                   });
       }
       list.sort((a, b) => (a.idx || 0) - (b.idx || 0));
@@ -218,12 +232,19 @@ Singleton {
         return;
       const winList = Array.isArray(windowsData) ? windowsData : (windowsData.windows || []);
       const list = [];
+      // Rebuilt from scratch on every poll so closed windows drop out cleanly.
+      const countByWorkspace = {};
       let newFocusedIdx = -1;
       for (let i = 0; i < winList.length; i++) {
         const w = winList[i];
         const isFocused = !!(w.is_focused || w.focused);
         if (isFocused && newFocusedIdx === -1) {
           newFocusedIdx = i;
+        }
+        const wsId = w.workspace_id !== undefined && w.workspace_id !== null ? w.workspace_id : w.workspaceId;
+        if (wsId !== undefined && wsId !== null) {
+          const key = String(wsId);
+          countByWorkspace[key] = (countByWorkspace[key] || 0) + 1;
         }
         list.push({
                     id: w.id,
@@ -232,12 +253,17 @@ Singleton {
                     appId: w.app_id || w.appId || w.class || "",
                     class: w.app_id || w.appId || w.class || "",
                     isFocused: isFocused,
-                    workspaceId: w.workspace_id || w.workspaceId,
+                    workspaceId: wsId,
                     output: w.output || "",
                     handle: null
                   });
       }
-      const signature = JSON.stringify(list.map(w => w.id + w.title + w.appId + w.isFocused));
+      internal.niriWindowCounts = countByWorkspace;
+
+      // Include workspaceId: moving a window between workspaces changes neither
+      // its title nor its appId, yet the grouped bar view and the occupied
+      // state must update.
+      const signature = JSON.stringify(list.map(w => w.id + w.title + w.appId + w.isFocused + w.workspaceId));
       if (signature !== internal.lastWindowSignature) {
         internal.lastWindowSignature = signature;
         root.windows.clear();
@@ -249,6 +275,12 @@ Singleton {
       if (newFocusedIdx !== root.focusedWindowIndex) {
         root.focusedWindowIndex = newFocusedIdx;
         root.activeWindowChanged();
+      }
+
+      // Occupancy lives on the workspace model, so re-derive it now that the
+      // per-workspace window counts are fresh (no extra niri query needed).
+      if (internal.lastNiriWorkspaces.length > 0) {
+        internal.processNiriWorkspaces(internal.lastNiriWorkspaces);
       }
     }
 

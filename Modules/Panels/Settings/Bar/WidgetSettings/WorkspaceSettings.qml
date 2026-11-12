@@ -17,6 +17,12 @@ ColumnLayout {
 
   property string valueLabelMode: widgetData.labelMode !== undefined ? widgetData.labelMode : widgetMetadata.labelMode
   property bool valueHideUnoccupied: widgetData.hideUnoccupied !== undefined ? widgetData.hideUnoccupied : widgetMetadata.hideUnoccupied
+  property string valueHiddenWorkspaces: {
+    const raw = widgetData.hiddenWorkspaces !== undefined ? widgetData.hiddenWorkspaces : widgetMetadata.hiddenWorkspaces;
+    if (!raw)
+      return "";
+    return Array.isArray(raw) ? raw.join(", ") : String(raw);
+  }
   property bool valueFollowFocusedScreen: widgetData.followFocusedScreen !== undefined ? widgetData.followFocusedScreen : widgetMetadata.followFocusedScreen
   property int valueCharacterCount: widgetData.characterCount !== undefined ? widgetData.characterCount : widgetMetadata.characterCount
 
@@ -40,6 +46,7 @@ ColumnLayout {
     var settings = Object.assign({}, widgetData || {});
     settings.labelMode = valueLabelMode;
     settings.hideUnoccupied = valueHideUnoccupied;
+    settings.hiddenWorkspaces = valueHiddenWorkspaces.split(",").map(token => token.trim()).filter(token => token !== "");
     settings.characterCount = valueCharacterCount;
     settings.followFocusedScreen = valueFollowFocusedScreen;
     settings.showApplications = valueShowApplications;
@@ -157,6 +164,17 @@ ColumnLayout {
                  valueHideUnoccupied = checked;
                  saveSettings();
                }
+  }
+
+  NTextInput {
+    label: "Hidden workspaces"
+    description: "Comma-separated workspace indices or names to always hide (e.g. 3, 4, stash)."
+    text: valueHiddenWorkspaces
+    placeholderText: "e.g. 3, 4, stash"
+    onTextChanged: {
+      valueHiddenWorkspaces = text;
+      saveSettings();
+    }
   }
 
   NToggle {

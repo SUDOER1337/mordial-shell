@@ -72,7 +72,7 @@ Singleton {
   readonly property real opacityFull: 1.0
 
   readonly property real effectivePanelOpacity: 1.0
-  readonly property real effectiveBarOpacity: 1.0
+  readonly property real effectiveBarOpacity: Settings.data.bar.backgroundOpacity
 
   // Shadows
   readonly property real shadowOpacity: 0.85

@@ -64,7 +64,7 @@ Item {
   readonly property string lmStudioSystemPrompt: Settings.data.aiChat?.lmstudio?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
 
   // llama.cpp (llama-server) Settings
-  readonly property string llamaBaseUrl: Settings.data.aiChat?.llama?.baseUrl || "http://localhost:8080/v1/chat/completions"
+  readonly property string llamaBaseUrl: Settings.data.aiChat?.llama?.baseUrl || "http://localhost:8080"
   readonly property string llamaModel: Settings.data.aiChat?.llama?.model || ""
   readonly property real llamaTemperature: Settings.data.aiChat?.llama?.temperature || 0.7
   readonly property string llamaSystemPrompt: Settings.data.aiChat?.llama?.systemPrompt || "You are a helpful assistant integrated into a Linux desktop shell. Be concise and helpful."
@@ -121,10 +121,14 @@ Item {
       if (!Settings.data.aiChat.ollama)
         Settings.data.aiChat.ollama = {};
       Settings.data.aiChat.ollama.model = newModel;
-    } else {
+    } else if (activeProvider === "lmstudio") {
       if (!Settings.data.aiChat.lmstudio)
         Settings.data.aiChat.lmstudio = {};
       Settings.data.aiChat.lmstudio.model = newModel;
+    } else if (activeProvider === "llama") {
+      if (!Settings.data.aiChat.llama)
+        Settings.data.aiChat.llama = {};
+      Settings.data.aiChat.llama.model = newModel;
     }
     Settings.saveImmediate();
 
@@ -572,8 +576,10 @@ Item {
     } else {
       if (activeProvider === "ollama")
         sendOllamaRequest();
-      else
+      else if (activeProvider === "lmstudio")
         sendLmStudioRequest();
+      else
+        sendLlamaRequest();
     }
   }
 
@@ -938,9 +944,9 @@ Item {
                    });
     }
 
-    var baseUrl = activeProvider === "ollama" ? ollamaBaseUrl : lmStudioBaseUrl;
-    var model = activeProvider === "ollama" ? ollamaModel : lmStudioModel;
-    var commandData = ProviderLogic.buildRephraseCommand(baseUrl, model, history, userMessage);
+    var baseUrl = activeProvider === "ollama" ? ollamaBaseUrl : (activeProvider === "lmstudio" ? lmStudioBaseUrl : llamaBaseUrl);
+    var model = activeProvider === "ollama" ? ollamaModel : (activeProvider === "lmstudio" ? lmStudioModel : llamaModel);
+    var commandData = ProviderLogic.buildRephraseCommand(baseUrl, model, history, userMessage, activeProvider !== "ollama");
     Logger.i("AIChat", "Rephrase: endpoint=" + commandData.url);
 
     rephraseProcess.command = commandData.args;
@@ -1057,14 +1063,16 @@ Item {
       var results = ProviderLogic.parseSearchResults(webSearchProcess.searchProvider, html, opts);
       Logger.i("AIChat", "Web search returned " + results.length + " results");
 
-      var systemPrompt = activeProvider === "ollama" ? ollamaSystemPrompt : lmStudioSystemPrompt;
+      var systemPrompt = activeProvider === "ollama" ? ollamaSystemPrompt : (activeProvider === "lmstudio" ? lmStudioSystemPrompt : llamaSystemPrompt);
       var enhancedPrompt = ProviderLogic.buildEnhancedSystemPrompt(systemPrompt, results, webSearchProcess.searchQuery);
 
       // Send to LLM with search-enhanced system prompt
       if (activeProvider === "ollama") {
         sendOllamaRequest(enhancedPrompt);
-      } else {
+      } else if (activeProvider === "lmstudio") {
         sendLmStudioRequest(enhancedPrompt);
+      } else {
+        sendLlamaRequest(enhancedPrompt);
       }
     }
   }
